@@ -1,0 +1,40 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/opt/ros/humble/include/**",
+        "/home/lu/Git_Project/github/ros2_learning/dev_ws/install/learning_interface/include/**",
+        "/home/lu/Git_Project/github/tita_rl_sim2sim2real/src/tita_bringup/include/**",
+        "/home/lu/Git_Project/github/tita_rl_sim2sim2real/src/tita_command/active_command/include/**",
+        "/home/lu/Git_Project/github/tita_rl_sim2sim2real/src/tita_command/command_manager/include/**",
+        "/home/lu/Git_Project/github/tita_rl_sim2sim2real/src/tita_command/passive_command/include/**",
+        "/home/lu/Git_Project/github/tita_rl_sim2sim2real/src/tita_command/sdk_command/include/**",
+        "/home/lu/Git_Project/github/tita_rl_sim2sim2real/src/tita_command/teleop_command/include/**",
+        "/home/lu/Git_Project/github/tita_rl_sim2sim2real/src/tita_locomotion/devices/commands_can/include/**",
+        "/home/lu/Git_Project/github/tita_rl_sim2sim2real/src/tita_locomotion/devices/hardware_bridge/include/**",
+        "/home/lu/Git_Project/github/tita_rl_sim2sim2real/src/tita_locomotion/devices/hw_broadcaster/include/**",
+        "/home/lu/Git_Project/github/tita_rl_sim2sim2real/src/tita_locomotion/devices/tita_robot/include/**",
+        "/home/lu/Git_Project/github/tita_rl_sim2sim2real/src/tita_locomotion/interaction/joy_controller/include/**",
+        "/home/lu/Git_Project/github/tita_rl_sim2sim2real/src/tita_locomotion/interaction/keyboard_controller/include/**",
+        "/home/lu/Git_Project/github/tita_rl_sim2sim2real/src/tita_locomotion/libraries/qpoases/include/**",
+        "/home/lu/Git_Project/github/tita_rl_sim2sim2real/src/tita_locomotion/tita_controllers/robot_inertia_calculator/include/**",
+        "/home/lu/Git_Project/github/tita_rl_sim2sim2real/src/tita_locomotion/tita_controllers/tita_controller/include/**",
+        "/home/lu/Git_Project/github/tita_rl_sim2sim2real/src/tita_locomotion/tita_webots_ros2/gazebo_bridge/include/**",
+        "/home/lu/Git_Project/github/tita_rl_sim2sim2real/src/tita_locomotion/tita_webots_ros2/template_ros2_controller/include/**",
+        "/home/lu/Git_Project/github/tita_rl_sim2sim2real/src/tita_locomotion/tita_webots_ros2/titati_webots_bridge/include/**",
+        "/home/lu/Git_Project/github/tita_rl_sim2sim2real/src/tita_locomotion/tita_webots_ros2/webots_bridge/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}
