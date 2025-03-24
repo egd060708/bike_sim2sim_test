@@ -31,8 +31,8 @@ void FSMState_RL::enter()
   for(int i=0;i<3;i++)
   {
     this->desired_pos[i] = this->_data->low_state->q[i];
-    this->obs.dof_pos[i] = this->_data->low_state->q[i];
-    this->obs.dof_vel[i] = this->_data->low_state->dq[i];
+    this->obs_.dof_pos[i] = this->_data->low_state->q[i];
+    this->obs_.dof_vel[i] = this->_data->low_state->dq[i];
   }
 
   this->params_.action_scale = 0.25;
@@ -78,7 +78,7 @@ void FSMState_RL::enter()
   for (int i = 0; i < OBS_BUF; i++)
   {
     // torch::Tensor obs_tensor = GetObs();
-    // // append obs to obs buffer
+    // // append obs_ to obs_ buffer
     // obs_buf = torch::cat({obs_buf.index({Slice(1,None),Slice()}),obs_tensor},0);
     this->_GetObs();
 
@@ -122,13 +122,13 @@ void FSMState_RL::run()
   {
     if(i == 0)
     {
-      this->_data->_low_cmd->tau_cmd[i] = this->_params->p_gains[i] * (this->desired_pos[i] - this->_data->low_state->q[i]) \
-                                         + this->_params->d_gains[i] * (0 - this->_data->low_state->dq[i]);
+      this->_data->low_cmd->tau_cmd[i] = this->params_->p_gains[i] * (this->desired_pos[i] - this->_data->low_state->q[i]) \
+                                         + this->params_->d_gains[i] * (0 - this->_data->low_state->dq[i]);
     }
     else
     {
-      this->_data->_low_cmd->tau_cmd[i] = this->_params->p_gains[i] * this->desired_pos[i] \
-                                         + this->_params->d_gains[i] * (0 - this->_data->low_state->dq[i]);
+      this->_data->low_cmd->tau_cmd[i] = this->params_->p_gains[i] * this->desired_pos[i] \
+                                         + this->params_->d_gains[i] * (0 - this->_data->low_state->dq[i]);
     }
   }
 }
@@ -176,19 +176,19 @@ void FSMState_RL::_GetObs()
     Mat3<double> _B2G_RotMat = this->_data->state_estimator->getResult().rBody;
     Mat3<double> _G2B_RotMat = this->_data->state_estimator->getResult().rBody.transpose();
 
-    Vec3<double> limvel = this->_data->state_estimator->getResult().vBody
+    Vec3<double> limvel = this->_data->state_estimator->getResult().vBody;
     Vec3<double> angvel = a_l;
     a_l = 0.97*this->_data->state_estimator->getResult().omegaBody + 0.03*a_l;
     Vec3<double> projected_gravity = _B2G_RotMat * Vec3<double>(0.0, 0.0, -1.0);
     Vec3<double> projected_forward = _G2B_RotMat * Vec3<double>(1.0, 0.0, 0.0);
  
-    this->obs_tmp.push_back(limvel(0)*this->params_.lin_vel_scale);
-    this->obs_tmp.push_back(limvel(1)*this->params_.lin_vel_scale);
-    this->obs_tmp.push_back(limvel(2)*this->params_.lin_vel_scale);
+    obs_tmp.push_back(limvel(0)*this->params_.lin_vel_scale);
+    obs_tmp.push_back(limvel(1)*this->params_.lin_vel_scale);
+    obs_tmp.push_back(limvel(2)*this->params_.lin_vel_scale);
 
-    this->obs_tmp.push_back(angvel(0)*this->params_.ang_vel_scale);
-    this->obs_tmp.push_back(angvel(1)*this->params_.ang_vel_scale);
-    this->obs_tmp.push_back(angvel(2)*this->params_.ang_vel_scale);
+    obs_tmp.push_back(angvel(0)*this->params_.ang_vel_scale);
+    obs_tmp.push_back(angvel(1)*this->params_.ang_vel_scale);
+    obs_tmp.push_back(angvel(2)*this->params_.ang_vel_scale);
 
     for (int i = 0; i < 3; ++i)
     {
@@ -247,7 +247,7 @@ void FSMState_RL::_Forward()
     for (int i = 0; i < NUM_OBS; i++)
         input_1.get()[i + NUM_OBS*(OBS_BUF-1)] = input_0.get()[i];
 
-    for (int i = 0; i < NUM_OUTPUT i++)
+    for (int i = 0; i < NUM_OUTPUT; i++)
         output_last.get()[i] = output.get()[i];
 
 }
@@ -256,15 +256,15 @@ void FSMState_RL::_Run_Forward()
 {
   while (this->threadRunning)
   {
-    long long _start_time = this->getSystemTime();
+    long long _start_time = getSystemTime();
 
     if (!this->stop_update_)
     {
       // update current dof positions and velocities
       for(int i=0;i<3;i++)
       {
-        this->obs.dof_pos[i] = this->_data->low_state->q[i];
-        this->obs.dof_vel[i] = this->_data->low_state->dq[i];
+        this->obs_.dof_pos[i] = this->_data->low_state->q[i];
+        this->obs_.dof_vel[i] = this->_data->low_state->dq[i];
       }
 
       _Forward();
