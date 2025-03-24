@@ -119,7 +119,7 @@
         link="front_turn" />
       <axis
         xyz="0 0 -1" />
-      <limit effort="20" lower="-1.3" upper="1.3" velocity="12.5"/>
+      <limit effort="100" lower="-1.3" upper="1.3" velocity="12.5"/>
     </joint>
     <link
       name="front_wheel">
@@ -172,7 +172,7 @@
         link="front_wheel" />
       <axis
         xyz="0 0 1" />
-      <limit effort="30" lower="-10000" upper="10000" velocity="200"/>
+      <limit effort="100" lower="-10000" upper="10000" velocity="200"/>
     </joint>
     <link
       name="rear_wheel">
@@ -225,7 +225,7 @@
         link="rear_wheel" />
       <axis
         xyz="0 0 -1" />
-      <limit effort="30" lower="-1000000" upper="10000000" velocity="200"/>
+      <limit effort="100" lower="-1000000" upper="10000000" velocity="200"/>
     </joint>
   </xacro:macro>
 </robot>

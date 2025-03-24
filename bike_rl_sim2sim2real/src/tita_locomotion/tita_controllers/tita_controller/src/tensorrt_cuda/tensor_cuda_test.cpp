@@ -63,9 +63,9 @@ void CudaTest::do_inference(
 {
     cudaMemcpyAsync(buffers[0], input_0, input_size_0, cudaMemcpyHostToDevice, stream);
     cudaMemcpyAsync(buffers[1], input_1, input_size_1, cudaMemcpyHostToDevice, stream);
-    context->setTensorAddress("onnx::Unsqueeze_0",buffers[0]);
-    context->setTensorAddress("onnx::Slice_1",buffers[1]);
-    context->setTensorAddress("71",buffers[2]);
+    context->setTensorAddress("input_tensor",buffers[0]);
+    context->setTensorAddress("obs_hist",buffers[1]);
+    context->setTensorAddress("output_tensor",buffers[2]);
     // context->setTensorAddress("onnx::Unsqueeze_0",buffers[0]);
     // context->setTensorAddress("onnx::Slice_1",buffers[1]);
     // context->setTensorAddress("90",buffers[2]);

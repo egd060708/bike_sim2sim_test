@@ -16,7 +16,7 @@
   <depend>pluginlib</depend>
 
   <depend>hardware_bridge</depend>
-  <!-- <depend>airbot_hardware_bridge</depend> -->manager
+  <!-- <depend>airbot_hardware_bridge</depend> -->
   <depend>teleop_command</depend>
   <depend>joy_controller</depend>
   <depend>tita_bringup</depend>

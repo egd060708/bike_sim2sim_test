@@ -29,14 +29,9 @@
     ros__parameters:
       update_rate: 500  # Hz
       joints:
-        - joint_left_leg_1
-        - joint_left_leg_2
-        - joint_left_leg_3
-        - joint_left_leg_4
-        - joint_right_leg_1
-        - joint_right_leg_2
-        - joint_right_leg_3
-        - joint_right_leg_4
+        - joint_front_turn
+        - joint_f_wheel
+        - joint_rear_wheel
       command_interfaces:
         - position
         - velocity
@@ -54,14 +49,9 @@
     ros__parameters:
       update_rate: 500  # Hz
       joints:
-        - joint_left_leg_1
-        - joint_left_leg_2
-        - joint_left_leg_3
-        - joint_left_leg_4
-        - joint_right_leg_1
-        - joint_right_leg_2
-        - joint_right_leg_3
-        - joint_right_leg_4
+        - joint_front_turn
+        - joint_f_wheel
+        - joint_rear_wheel
       command_interfaces:
         # - position
         # - velocity
@@ -78,11 +68,6 @@
   effort_controller:
     ros__parameters:
       joints:
-        - joint_left_leg_1
-        - joint_left_leg_2
-        - joint_left_leg_3
-        - joint_left_leg_4
-        - joint_right_leg_1
-        - joint_right_leg_2
-        - joint_right_leg_3
-        - joint_right_leg_4
+        - joint_front_turn
+        - joint_f_wheel
+        - joint_rear_wheel
