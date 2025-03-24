@@ -122,13 +122,13 @@ void FSMState_RL::run()
   {
     if(i == 0)
     {
-      this->_data->low_cmd->tau_cmd[i] = this->params_->p_gains[i] * (this->desired_pos[i] - this->_data->low_state->q[i]) \
-                                         + this->params_->d_gains[i] * (0 - this->_data->low_state->dq[i]);
+      this->_data->low_cmd->tau_cmd[i] = this->params_.p_gains[i] * (this->desired_pos[i] - this->_data->low_state->q[i]) \
+                                         + this->params_.d_gains[i] * (0 - this->_data->low_state->dq[i]);
     }
     else
     {
-      this->_data->low_cmd->tau_cmd[i] = this->params_->p_gains[i] * this->desired_pos[i] \
-                                         + this->params_->d_gains[i] * (0 - this->_data->low_state->dq[i]);
+      this->_data->low_cmd->tau_cmd[i] = this->params_.p_gains[i] * this->desired_pos[i] \
+                                         + this->params_.d_gains[i] * (0 - this->_data->low_state->dq[i]);
     }
   }
 }
@@ -192,7 +192,7 @@ void FSMState_RL::_GetObs()
 
     for (int i = 0; i < 3; ++i)
     {
-        this->obs_tmp.push_back(projected_gravity(i));
+        obs_tmp.push_back(projected_gravity(i));
     }
 
     // cmd
