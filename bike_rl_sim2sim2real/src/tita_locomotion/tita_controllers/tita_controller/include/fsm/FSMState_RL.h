@@ -5,7 +5,7 @@
 #include "FSMState.h"
 #include "tensorrt_cuda/tensor_cuda_test.hpp"
 
-#define NUM_OBS 21
+#define NUM_OBS 18
 #define OBS_BUF 10
 #define NUM_OUTPUT 3
 /**

@@ -20,7 +20,7 @@ FSMState_RL::FSMState_RL(std::shared_ptr<ControlFSMData> data)
   output_last(new float[NUM_OUTPUT]),
   input_1_temp(new float[NUM_OBS*(OBS_BUF-1)])
 {
-  this->cuda_test_ = std::make_shared<CudaTest>("/home/hxt/Downloads/LocomotionWithNP3O_8dofs_126/tita_rl/model_gn.engine");
+  this->cuda_test_ = std::make_shared<CudaTest>("/home/lu/Git_Project/gitlab/bike_rl/model_gn.engine");
   std::cout << "cuda init :" << this->cuda_test_->get_cuda_init() << std::endl;
 }
 
@@ -221,10 +221,10 @@ void FSMState_RL::_GetObs()
     }
 
     // last action
-    for (int i = 0; i < NUM_OUTPUT; ++i)
-    {
-        obs_tmp.push_back(output_last.get()[i]);
-    }
+    // for (int i = 0; i < NUM_OUTPUT; ++i)
+    // {
+    //     obs_tmp.push_back(output_last.get()[i]);
+    // }
 
     for(int i = 0; i < NUM_OBS; i++)
     {
