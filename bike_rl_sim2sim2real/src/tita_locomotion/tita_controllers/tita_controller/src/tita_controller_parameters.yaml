@@ -62,6 +62,38 @@ tita_controller:
       description: "Radius of a wheel, used for transformation of linear velocity into wheel rotations. If this parameter is wrong the robot will move faster or slower then expected.",
     }
 
+  rl:
+    model_engine_path:
+      {
+        type: string,
+        default_value: /home/lu/Git_Project/gitlab/bike_rl/engine/3model_10000.engine,
+        description: "file path for rl model engine."
+      }
+    turn_kp:
+      {
+        type: double,
+        default_value: 40.,
+        description: "Kp value of bike rear turn joint."
+      }
+    turn_kd:
+      {
+        type: double,
+        default_value: 5.,
+        description: "Kd value of bike rear turn joint."
+      }
+    wheel_kp:
+      {
+        type: double,
+        default_value: 10.,
+        description: "Kp value of bike wheel joints."
+      }
+    wheel_kd:
+      {
+        type: double,
+        default_value: 1.,
+        description: "Kd value of bike wheel joints."
+      }
+
   task: 
     twist_linear_x:
       max_velocity:

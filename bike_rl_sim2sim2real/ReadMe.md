@@ -75,3 +75,8 @@ crsf-app -bind
 nohup ros2 launch locomotion_bringup hw_bringup.launch.py ctrl_mode:=wbc &
 nohup ros2 launch joy_controller joy_controller.launch.py &
 ```
+
+把onnx模型转换成通用engine文件
+```bash
+/home/lu/Downloads/TensorRT-10.9.0.34/bin/trtexec --onnx=test_straight.onnx --saveEngine=model_gn.engine
+```

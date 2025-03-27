@@ -87,6 +87,10 @@ struct RobotControlParameters
   // manupalator param
   std::string ee_name_;
   std::vector<scalar_t> arm_joint_kp_, arm_joint_kd_, arm_joint_weight_;
+
+  // rl param
+  std::string model_engine_path{"/home/lu/Git_Project/gitlab/bike_rl/engine/3model_10000.engine"};
+  scalar_t turn_kp{40.},turn_kd{5.},wheel_kp{10.},wheel_kd{1.};
 };
 
 #endif  // PROJECT_ROBOTPARAMETERS_H

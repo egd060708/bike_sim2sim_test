@@ -125,7 +125,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.05" radius="0.33"/>
+        <mesh filename="../meshes/front_wheel.STL"/>
       </geometry>
     </collision>
   </link>
@@ -154,7 +154,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.05" radius="0.33"/>
+        <mesh filename="../meshes/rear_wheel.STL"/>
       </geometry>
     </collision>
   </link>

@@ -20,8 +20,17 @@ FSMState_RL::FSMState_RL(std::shared_ptr<ControlFSMData> data)
       output_last(new float[NUM_OUTPUT]),
       input_1_temp(new float[NUM_OBS * (OBS_BUF - 1)])
 {
-  this->cuda_test_ = std::make_shared<CudaTest>("/home/lu/Git_Project/gitlab/bike_rl/model_gn.engine");
+  this->cuda_test_ = std::make_shared<CudaTest>(data->params->model_engine_path);
+  // std::cout << "111111111111111111111111111111111111111111111111111111" << std::endl;
+  // this->cuda_test_ = std::make_shared<CudaTest>("/home/lu/Git_Project/gitlab/bike_rl/engine/4model_8400.engine");
   std::cout << "cuda init :" << this->cuda_test_->get_cuda_init() << std::endl;
+  // std::cout << "222222222222222222222222222222222222222222222222222222" << std::endl;
+  this->params_.p_gains[0] = data->params->turn_kp;
+  this->params_.p_gains[1] = data->params->wheel_kp;
+  this->params_.p_gains[2] = data->params->wheel_kp;
+  this->params_.d_gains[0] = data->params->turn_kd;
+  this->params_.d_gains[1] = data->params->wheel_kd;
+  this->params_.d_gains[2] = data->params->wheel_kd;
 }
 
 void FSMState_RL::enter()
@@ -46,12 +55,12 @@ void FSMState_RL::enter()
   this->params_.commands_scale[0] = this->params_.lin_vel_scale;
   this->params_.commands_scale[1] = this->params_.lin_vel_scale;
   this->params_.commands_scale[2] = this->params_.ang_vel_scale;
-  this->params_.p_gains[0] = 40;
-  this->params_.p_gains[1] = 10;
-  this->params_.p_gains[2] = 10;
-  this->params_.d_gains[0] = 1.;
-  this->params_.d_gains[1] = 0.5;
-  this->params_.d_gains[2] = 0.5;
+  // this->params_.p_gains[0] = 40;
+  // this->params_.p_gains[1] = 10;
+  // this->params_.p_gains[2] = 10;
+  // this->params_.d_gains[0] = 5.;
+  // this->params_.d_gains[1] = 1.;
+  // this->params_.d_gains[2] = 1.;
 
   const float default_dof_pos_tmp[NUM_OUTPUT] = {0.};
   this->heading_cmd_ = 0.;
@@ -109,6 +118,7 @@ void FSMState_RL::run()
   // update cmds
   this->x_vel_cmd_ = this->_data->state_command->rc_data_->twist_linear[point::X];
   this->heading_cmd_ = this->_data->state_command->rc_data_->twist_angular[point::Z];
+  // this->x_vel_cmd_=1.;
   // _data->state_command->rc_data_->twist_angular[point::Z]
   this->_data->low_cmd->qd.setZero();
   this->_data->low_cmd->qd_dot.setZero();
@@ -205,6 +215,9 @@ void FSMState_RL::_GetObs()
   obs_tmp.push_back(this->x_vel_cmd_ * this->params_.commands_scale[0]);
   obs_tmp.push_back(0.0);
   obs_tmp.push_back(angle * this->params_.commands_scale[2]);
+  // obs_tmp.push_back(this->x_vel_cmd_ * this->params_.commands_scale[0]);
+  // obs_tmp.push_back(angle * this->params_.commands_scale[0]);
+  // obs_tmp.push_back(0.0);
   std::cout << "commend: " << this->x_vel_cmd_ << ", " << 0 << ", " << angle << std::endl;
 
   // pos
@@ -238,7 +251,7 @@ void FSMState_RL::_Forward()
   cuda_test_->do_inference(input_0.get(), input_1.get(), output.get());
 
   for (int i = 0; i < NUM_OBS * (OBS_BUF - 1); i++)
-    input_1_temp.get()[i] = input_1.get()[i + 33];
+    input_1_temp.get()[i] = input_1.get()[i + NUM_OBS];
 
   for (int i = 0; i < NUM_OBS * (OBS_BUF - 1); i++)
     input_1.get()[i] = input_1_temp.get()[i];

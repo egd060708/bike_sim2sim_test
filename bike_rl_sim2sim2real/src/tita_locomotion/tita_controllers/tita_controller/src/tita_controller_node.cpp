@@ -658,6 +658,14 @@ void TitaController::update_control_parameters()
     "estimator.imu_sensor_noise_velocity", param->imu_sensor_noise_velocity);
   get_node()->get_parameter<scalar_t>(
     "estimator.foot_sensor_noise_position", param->foot_sensor_noise_position);
+
+  // rl data
+  get_node()->get_parameter<std::string>("rl.model_engine_path",param->model_engine_path);
+  get_node()->get_parameter<scalar_t>("rl.turn_kp",param->turn_kp);
+  get_node()->get_parameter<scalar_t>("rl.turn_kd",param->turn_kd);
+  get_node()->get_parameter<scalar_t>("rl.wheel_kp",param->wheel_kp);
+  get_node()->get_parameter<scalar_t>("rl.wheel_kd",param->wheel_kd);
+  
   // clang-format on
   RCLCPP_INFO(get_node()->get_logger(), "Parameters were updated");
 }
