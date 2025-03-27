@@ -1,0 +1,193 @@
+#VRML_SIM R2025a utf8
+# license: Apache License 2.0
+# license url: http://www.apache.org/licenses/LICENSE-2.0
+# This is a proto file for Webots for the bike
+# Extracted from: /home/lu/Git_Project/bike_rl_sim2sim2real/src/tita_locomotion/tita_webots_ros2/bike_webots_bridge/worlds/bike.urdf
+
+PROTO bike [
+  field  SFVec3f     translation     0 0 0
+  field  SFRotation  rotation        0 0 1 0
+  field  SFString    name            "bike"  # Is `Robot.name`.
+  field  SFString    controller      "void"  # Is `Robot.controller`.
+  field  MFString    controllerArgs  []      # Is `Robot.controllerArgs`.
+  field  SFString    customData      ""      # Is `Robot.customData`.
+  field  SFBool      supervisor      FALSE   # Is `Robot.supervisor`.
+  field  SFBool      synchronization TRUE    # Is `Robot.synchronization`.
+  field  SFBool      selfCollision   FALSE   # Is `Robot.selfCollision`.
+]
+{
+  Robot {
+    translation IS translation
+    rotation IS rotation
+    controller IS controller
+    controllerArgs IS controllerArgs
+    customData IS customData
+    supervisor IS supervisor
+    synchronization IS synchronization
+    selfCollision IS selfCollision
+    children [
+      Shape {
+        appearance DEF base_link_material PBRAppearance {
+          baseColor 0.898040 0.917650 0.929410
+          roughness 1.000000
+          metalness 0
+        }
+        geometry DEF base_link Mesh {
+          url "../meshes/base_link.STL"
+        }
+      }
+      HingeJoint {
+        jointParameters HingeJointParameters {
+          axis 0.342024 0.000000 -0.939691
+          anchor 0.465350 0.000000 0.126070
+        }
+        device [
+          RotationalMotor {
+            name "joint_front_turn"
+            maxVelocity 12.5
+            minPosition -1.3
+            maxPosition 1.3
+            maxTorque 20.0
+          }
+          PositionSensor {
+            name "joint_front_turn_sensor"
+          }
+        ]
+        endPoint Solid {
+          translation 0.465350 0.000000 0.126070
+          rotation 0.000000 -1.000000 0.000000 0.349070
+          children [
+            Shape {
+              appearance DEF front_turn_material PBRAppearance {
+                baseColor 0.698040 0.698040 0.698040
+                roughness 1.000000
+                metalness 0
+              }
+              geometry DEF front_turn Mesh {
+                url "../meshes/front_turn.STL"
+              }
+            }
+            HingeJoint {
+              jointParameters HingeJointParameters {
+                axis -0.000004 1.000000 -0.000001
+                anchor 0.000000 0.000000 -0.527910
+              }
+              device [
+                RotationalMotor {
+                  name "joint_f_wheel"
+                  maxVelocity 200.0
+                  minPosition -10000.0
+                  maxPosition 10000.0
+                  maxTorque 30.0
+                }
+                PositionSensor {
+                  name "joint_f_wheel_sensor"
+                }
+              ]
+              endPoint Solid {
+                translation 0.000000 0.000000 -0.527910
+                rotation -0.443702 0.633690 0.633691 2.306389
+                children [
+                  Shape {
+                    appearance DEF front_wheel_material PBRAppearance {
+                      baseColor 0.698040 0.698040 0.698040
+                      roughness 1.000000
+                      metalness 0
+                    }
+                    geometry DEF front_wheel Mesh {
+                      url "../meshes/front_wheel.STL"
+                    }
+                  }
+                ]
+                name "front_wheel"
+                boundingObject Cylinder {
+                  radius 0.33
+                  height 0.05
+                }
+                physics Physics {
+                  density -1
+                  mass 1.591100
+                  centerOfMass [ -0.000000 0.000000 0.000000 ]
+                  inertiaMatrix [
+                    6.456600e-02 6.456600e-02 1.286100e-01
+                    1.546800e-17 1.662300e-17 7.589900e-19
+                  ]
+                }
+              }
+            }
+          ]
+          name "front_turn"
+          boundingObject USE front_turn
+          physics Physics {
+            density -1
+            mass 0.272170
+            centerOfMass [ 0.000144 0.000000 -0.342280 ]
+            inertiaMatrix [
+              4.219100e-03 3.709700e-03 5.485400e-04
+              -1.976200e-11 -6.699100e-06 2.058400e-10
+            ]
+          }
+        }
+      }
+      HingeJoint {
+        jointParameters HingeJointParameters {
+          axis 0.000004 1.000000 -0.000000
+          anchor -0.374740 0.000000 -0.370000
+        }
+        device [
+          RotationalMotor {
+            name "joint_rear_wheel"
+            maxVelocity 200.0
+            minPosition -1000000.0
+            maxPosition 10000000.0
+            maxTorque 30.0
+          }
+          PositionSensor {
+            name "joint_rear_wheel_sensor"
+          }
+        ]
+        endPoint Solid {
+          translation -0.374740 0.000000 -0.370000
+          rotation 0.577350 0.577350 -0.577352 2.094399
+          children [
+            Shape {
+              appearance DEF rear_wheel_material PBRAppearance {
+                baseColor 0.698040 0.698040 0.698040
+                roughness 1.000000
+                metalness 0
+              }
+              geometry DEF rear_wheel Mesh {
+                url "../meshes/rear_wheel.STL"
+              }
+            }
+          ]
+          name "rear_wheel"
+          boundingObject Cylinder {
+            radius 0.33
+            height 0.05
+          }
+          physics Physics {
+            density -1
+            mass 1.591100
+            centerOfMass [ -0.000000 0.000000 0.000000 ]
+            inertiaMatrix [
+              6.456600e-02 6.456600e-02 1.286100e-01
+              2.623900e-17 2.327100e-20 -1.496000e-20
+            ]
+          }
+        }
+      }
+    ]
+    name IS name
+    boundingObject USE base_link
+    physics Physics {
+      density -1
+      mass 8.588400
+      centerOfMass [ 0.058013 0.000002 -0.188890 ]
+      inertiaMatrix [
+        2.623500e-01 7.512500e-01 5.012800e-01
+        1.741100e-06 -2.052600e-01 1.470800e-06
+      ]
+    }
+  }
+}
