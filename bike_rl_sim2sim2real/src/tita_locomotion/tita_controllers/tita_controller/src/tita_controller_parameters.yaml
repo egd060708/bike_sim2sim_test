@@ -66,7 +66,7 @@ tita_controller:
     model_engine_path:
       {
         type: string,
-        default_value: /home/lu/Git_Project/gitlab/bike_rl/engine/3model_10000.engine,
+        default_value: /home/lu/Git_Project/gitlab/bike_rl/engine/4model_8400.engine,
         description: "file path for rl model engine."
       }
     turn_kp:

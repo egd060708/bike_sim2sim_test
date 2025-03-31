@@ -73,6 +73,7 @@ private:
   float wheel_init_pos_abs_[4];
   float x_vel_cmd_;
   float heading_cmd_;
+  std::string model_name;
 private:
   ModelParams params_;
   Observations obs_;

@@ -20,17 +20,18 @@ FSMState_RL::FSMState_RL(std::shared_ptr<ControlFSMData> data)
       output_last(new float[NUM_OUTPUT]),
       input_1_temp(new float[NUM_OBS * (OBS_BUF - 1)])
 {
-  this->cuda_test_ = std::make_shared<CudaTest>(data->params->model_engine_path);
+  // this->cuda_test_ = std::make_shared<CudaTest>(data->params->model_engine_path);
+  this->model_name = data->params->model_engine_path;
   // std::cout << "111111111111111111111111111111111111111111111111111111" << std::endl;
-  // this->cuda_test_ = std::make_shared<CudaTest>("/home/lu/Git_Project/gitlab/bike_rl/engine/4model_8400.engine");
+  this->cuda_test_ = std::make_shared<CudaTest>("/home/lu/Git_Project/gitlab/bike_rl/engine/14model_10000.engine");
   std::cout << "cuda init :" << this->cuda_test_->get_cuda_init() << std::endl;
   // std::cout << "222222222222222222222222222222222222222222222222222222" << std::endl;
-  this->params_.p_gains[0] = data->params->turn_kp;
-  this->params_.p_gains[1] = data->params->wheel_kp;
-  this->params_.p_gains[2] = data->params->wheel_kp;
-  this->params_.d_gains[0] = data->params->turn_kd;
-  this->params_.d_gains[1] = data->params->wheel_kd;
-  this->params_.d_gains[2] = data->params->wheel_kd;
+  // this->params_.p_gains[0] = data->params->turn_kp;
+  // this->params_.p_gains[1] = data->params->wheel_kp;
+  // this->params_.p_gains[2] = data->params->wheel_kp;
+  // this->params_.d_gains[0] = data->params->turn_kd;
+  // this->params_.d_gains[1] = data->params->wheel_kd;
+  // this->params_.d_gains[2] = data->params->wheel_kd;
 }
 
 void FSMState_RL::enter()
@@ -39,7 +40,7 @@ void FSMState_RL::enter()
 
   this->_data->state_command->firstRun = true;
 
-  for (int i = 0; i < 3; i++)
+  for (int i = 0; i < NUM_OUTPUT; i++)
   {
     this->desired_pos[i] = this->_data->low_state->q[i];
     this->obs_.dof_pos[i] = this->_data->low_state->q[i];
@@ -55,14 +56,19 @@ void FSMState_RL::enter()
   this->params_.commands_scale[0] = this->params_.lin_vel_scale;
   this->params_.commands_scale[1] = this->params_.lin_vel_scale;
   this->params_.commands_scale[2] = this->params_.ang_vel_scale;
-  // this->params_.p_gains[0] = 40;
-  // this->params_.p_gains[1] = 10;
-  // this->params_.p_gains[2] = 10;
-  // this->params_.d_gains[0] = 5.;
-  // this->params_.d_gains[1] = 1.;
-  // this->params_.d_gains[2] = 1.;
+  this->params_.p_gains[0] = 40;
+  this->params_.p_gains[1] = 10;
 
-  const float default_dof_pos_tmp[NUM_OUTPUT] = {0.};
+  this->params_.d_gains[0] = 5.;
+  this->params_.d_gains[1] = 1.;
+
+  if(NUM_OUTPUT == 3)
+  {
+    this->params_.p_gains[2] = 10;
+    this->params_.d_gains[2] = 1.;
+  }
+
+  // const float default_dof_pos_tmp[NUM_OUTPUT] = {0.};
   this->heading_cmd_ = 0.;
 
   for (int i = 0; i < NUM_OBS * (OBS_BUF - 1); i++)
@@ -133,7 +139,15 @@ void FSMState_RL::run()
     }
     else
     {
-      this->_data->low_cmd->tau_cmd[i] = this->params_.p_gains[i] * this->desired_pos[i] + this->params_.d_gains[i] * (0 - this->_data->low_state->dq[i]);
+      if(NUM_OUTPUT == 2)
+      {
+        this->_data->low_cmd->tau_cmd[2] = this->params_.p_gains[i] * this->desired_pos[i] + this->params_.d_gains[i] * (0 - this->_data->low_state->dq[i]);
+        this->_data->low_cmd->tau_cmd[1] = 0;
+      }
+      else
+      {
+        this->_data->low_cmd->tau_cmd[i] = this->params_.p_gains[i] * this->desired_pos[i] + this->params_.d_gains[i] * (0 - this->_data->low_state->dq[i]);
+      }
     }
   }
 }
@@ -206,19 +220,26 @@ void FSMState_RL::_GetObs()
   }
 
   // cmd
-  double angle = (double)this->heading_cmd_;
-  angle = fmod(angle, 2.0 * M_PI);
-  if (angle > M_PI)
+  double angle_err = (double)this->heading_cmd_ - this->_data->state_estimator->getResult().rpy(2,0);
+  angle_err = fmod(angle_err, 2.0 * M_PI);
+  while (angle_err > M_PI)
   {
-    angle = angle - 2.0 * M_PI;
+    angle_err = angle_err - 2.0 * M_PI;
   }
+  while (angle_err < -M_PI)
+  {
+    angle_err = angle_err + 2.0 * M_PI;
+  }
+  angle_err = 0.75 * angle_err;
+  angle_err = ((angle_err > 1.) ? 1. : (angle_err < -1.) ? -1. : angle_err) - 0.35;
   obs_tmp.push_back(this->x_vel_cmd_ * this->params_.commands_scale[0]);
   obs_tmp.push_back(0.0);
-  obs_tmp.push_back(angle * this->params_.commands_scale[2]);
+  obs_tmp.push_back(angle_err * this->params_.commands_scale[2]);
   // obs_tmp.push_back(this->x_vel_cmd_ * this->params_.commands_scale[0]);
   // obs_tmp.push_back(angle * this->params_.commands_scale[0]);
   // obs_tmp.push_back(0.0);
-  std::cout << "commend: " << this->x_vel_cmd_ << ", " << 0 << ", " << angle << std::endl;
+  std::cout << "commend: " << this->x_vel_cmd_ << ", " << 0 << ", " << this->_data->state_estimator->getResult().rpy(2,0) << std::endl;
+  // std::cout << "model_path: " << this->model_name << std::endl;
 
   // pos
   for (int i = 0; i < NUM_OUTPUT; ++i)
