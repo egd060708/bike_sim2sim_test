@@ -27,7 +27,7 @@
 #define STEP_POSITION 0.01
 #define STEP_HEIGHT 0.1
 
-#define MAX_VEL_X 1.0
+#define MAX_VEL_X 3.0
 #define MAX_VEL_W 6.28
 #define MAX_ORIENTATION 0.2
 #define MAX_POSITION 0.1

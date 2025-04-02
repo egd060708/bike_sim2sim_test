@@ -1,0 +1,3 @@
+[submodule "bike_rl_sim2sim2real/src/tita_locomotion/tita_controllers/tita_controller/my_controller_module"]
+	path = bike_rl_sim2sim2real/src/tita_locomotion/tita_controllers/tita_controller/my_controller_module
+	url = https://github.com/egd060708/controller_module.git

@@ -23,7 +23,7 @@ FSMState_RL::FSMState_RL(std::shared_ptr<ControlFSMData> data)
   // this->cuda_test_ = std::make_shared<CudaTest>(data->params->model_engine_path);
   this->model_name = data->params->model_engine_path;
   // std::cout << "111111111111111111111111111111111111111111111111111111" << std::endl;
-  this->cuda_test_ = std::make_shared<CudaTest>("/home/lu/Git_Project/gitlab/bike_rl/engine/14model_10000.engine");
+  this->cuda_test_ = std::make_shared<CudaTest>("/home/lu/Git_Project/gitlab/bike_rl/engine/17model_10000_simple.engine");
   std::cout << "cuda init :" << this->cuda_test_->get_cuda_init() << std::endl;
   // std::cout << "222222222222222222222222222222222222222222222222222222" << std::endl;
   // this->params_.p_gains[0] = data->params->turn_kp;
@@ -32,6 +32,13 @@ FSMState_RL::FSMState_RL(std::shared_ptr<ControlFSMData> data)
   // this->params_.d_gains[0] = data->params->turn_kd;
   // this->params_.d_gains[1] = data->params->wheel_kd;
   // this->params_.d_gains[2] = data->params->wheel_kd;
+
+  // init pid tick and params mode
+  this->heading_pid.getMicroTick_regist(getSystemTime);
+  this->heading_pid.PID_Init(Common,0);
+  this->heading_pid.Params_Config(0.75,0.,0.,0.5,1.5,-1.5);
+  // this->heading_pid.integral = 0.3/0.01;
+  this->heading_pid.d_of_current = false;
 }
 
 void FSMState_RL::enter()
@@ -44,7 +51,7 @@ void FSMState_RL::enter()
   {
     this->desired_pos[i] = this->_data->low_state->q[i];
     this->obs_.dof_pos[i] = this->_data->low_state->q[i];
-    this->obs_.dof_vel[i] = this->_data->low_state->dq[i];
+    this->obs_.dof_vel[i] = this->_data->low_state->d
   }
 
   this->params_.action_scale = 0.25;
@@ -91,7 +98,7 @@ void FSMState_RL::enter()
     // torch::Tensor obs_tensor = GetObs();
     // // append obs_ to obs_ bufferNUM_OBS
     // obs_buf = torch::cat({obs_buf.index({Slice(1,None),Slice()}),obs_tensor},0);
-    this->_GetObs();
+    this->_GetObs(true);
 
     for (int i = 0; i < NUM_OBS * (OBS_BUF - 1); i++)
       input_1_temp.get()[i] = input_1.get()[i + NUM_OBS];
@@ -106,7 +113,7 @@ void FSMState_RL::enter()
 
   for (int i = 0; i < OBS_BUF; i++)
   {
-    this->_Forward();
+    this->_Forward(true);
   }
 
   this->threadRunning = true;
@@ -186,7 +193,7 @@ FSMStateName FSMState_RL::checkTransition()
   return this->_nextStateName;
 }
 
-void FSMState_RL::_GetObs()
+void FSMState_RL::_GetObs(bool _is_init)
 {
   // omegawb = state_estimate_->omegaBody;
   // qwb = state_estimate_->orientation;
@@ -230,15 +237,31 @@ void FSMState_RL::_GetObs()
   {
     angle_err = angle_err + 2.0 * M_PI;
   }
-  angle_err = 0.75 * angle_err;
-  angle_err = ((angle_err > 1.) ? 1. : (angle_err < -1.) ? -1. : angle_err) - 0.35;
+  std::cout << "commend: " << this->x_vel_cmd_ << ", " << 0 << ", " << angle_err << std::endl;
+  // angle_err = 0.75 * angle_err;
+  // angle_err = ((angle_err > 1.) ? 1. : (angle_err < -1.) ? -1. : angle_err)/* - 0.35*/;
+  if(_is_init == false)
+  {
+    this->heading_pid.target = angle_err;
+    this->heading_pid.current = 0;
+    angle_err = this->heading_pid.Adjust(0);
+    std::cout << "i_term: " << this->heading_pid.I_Term << std::endl;
+    std::cout << "out:    " << angle_err << std::endl;
+    std::cout << "dt:     " << this->heading_pid.dt << std::endl;
+  }
+  else
+  {
+    angle_err = 0;
+  }
+  
+  // angle_err = (double)this->heading_cmd_;
   obs_tmp.push_back(this->x_vel_cmd_ * this->params_.commands_scale[0]);
   obs_tmp.push_back(0.0);
   obs_tmp.push_back(angle_err * this->params_.commands_scale[2]);
   // obs_tmp.push_back(this->x_vel_cmd_ * this->params_.commands_scale[0]);
   // obs_tmp.push_back(angle * this->params_.commands_scale[0]);
   // obs_tmp.push_back(0.0);
-  std::cout << "commend: " << this->x_vel_cmd_ << ", " << 0 << ", " << this->_data->state_estimator->getResult().rpy(2,0) << std::endl;
+  
   // std::cout << "model_path: " << this->model_name << std::endl;
 
   // pos
@@ -266,9 +289,9 @@ void FSMState_RL::_GetObs()
   }
 }
 
-void FSMState_RL::_Forward()
+void FSMState_RL::_Forward(bool _is_init)
 {
-  _GetObs();
+  _GetObs(_is_init);
   cuda_test_->do_inference(input_0.get(), input_1.get(), output.get());
 
   for (int i = 0; i < NUM_OBS * (OBS_BUF - 1); i++)
@@ -299,7 +322,7 @@ void FSMState_RL::_Run_Forward()
         this->obs_.dof_vel[i] = this->_data->low_state->dq[i];
       }
 
-      _Forward();
+      _Forward(false);
 
       // calculate actions
       for (int j = 0; j < NUM_OUTPUT; j++)

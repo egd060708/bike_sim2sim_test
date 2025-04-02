@@ -1,0 +1,225 @@
+#VRML_SIM R2023b utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/floors/protos/CircleArena.proto"
+
+WorldInfo {
+  ERP 0.8
+  basicTimeStep 2
+  dragForceScale 1000
+  contactProperties [
+    ContactProperties {
+    }
+  ]
+}
+Viewpoint {
+  orientation 0.10052394368237776 0.15156704554026618 -0.983322107680254 1.1867843784889522
+  position -0.3705657622739452 1.4592018024343487 0.7005715050612579
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+CircleArena {
+  radius 100
+  floorTileSize 2 2
+}
+Robot {
+  name "Ros2Supervisor"
+  controller "<extern>"
+  supervisor TRUE
+}
+Robot {
+  translation 0 0 0.72
+  children [
+    Accelerometer {
+    }
+    InertialUnit {
+      name "imu"
+    }
+    Gyro {
+    }
+    GPS {
+    }
+    Shape {
+      appearance DEF base_link_material PBRAppearance {
+        baseColor 0.89804 0.91765 0.92941
+        roughness 1
+        metalness 0
+      }
+      geometry DEF base_link Mesh {
+        url [
+          "/usr/share/robot_description/bike/meshes/base_link.STL"
+        ]
+      }
+    }
+    HingeJoint {
+      jointParameters HingeJointParameters {
+        axis 0.342024 0 -0.939691
+        anchor 0.46535 0 0.12607
+        minStop -1.3
+        maxStop 1.3
+      }
+      device [
+        RotationalMotor {
+          name "joint_front_turn"
+          maxVelocity 12.5
+          minPosition -1.3
+          maxPosition 1.3
+          maxTorque 10000
+        }
+        PositionSensor {
+          name "joint_front_turn_sensor"
+        }
+      ]
+      endPoint Solid {
+        translation 0.46535 0 0.12607
+        rotation 0 -1 0 0.3490700000000006
+        children [
+          Shape {
+            appearance DEF front_turn_material PBRAppearance {
+              baseColor 0.69804 0.69804 0.69804
+              roughness 1
+              metalness 0
+            }
+            geometry DEF front_turn Mesh {
+              url [
+                "/usr/share/robot_description/bike/meshes/front_turn.STL"
+              ]
+            }
+          }
+          HingeJoint {
+            jointParameters HingeJointParameters {
+              axis -4e-06 1 -1e-06
+              anchor 0 0 -0.52791
+            }
+            device [
+              RotationalMotor {
+                name "joint_f_wheel"
+                maxVelocity 200
+                minPosition -10000
+                maxPosition 10000
+                maxTorque 10000
+              }
+              PositionSensor {
+                name "joint_f_wheel_sensor"
+              }
+            ]
+            endPoint Solid {
+              translation 0 0 -0.52791
+              rotation -0.4437022741226774 0.6336903914987975 0.6336913914994152 2.306389
+              children [
+                Shape {
+                  appearance DEF front_wheel_material PBRAppearance {
+                    baseColor 0.69804 0.69804 0.69804
+                    roughness 1
+                    metalness 0
+                  }
+                  geometry DEF front_wheel Mesh {
+                    url [
+                      "/usr/share/robot_description/bike/meshes/front_wheel.STL"
+                    ]
+                  }
+                }
+              ]
+              name "front_wheel"
+              boundingObject Cylinder {
+                height 0.03
+                radius 0.33
+              }
+              physics Physics {
+                density -1
+                mass 1.5911
+                centerOfMass [
+                  0 0 0
+                ]
+                inertiaMatrix [
+                  0.064566 0.064566 0.12861
+                  1.5468e-17 1.6623e-17 7.5899e-19
+                ]
+              }
+            }
+          }
+        ]
+        name "front_turn"
+        boundingObject USE front_turn
+        physics Physics {
+          density -1
+          mass 0.27217
+          centerOfMass [
+            0.000144 0 -0.34228
+          ]
+          inertiaMatrix [
+            0.0042191 0.0037097 0.00054854
+            -1.9762e-11 -6.6991e-06 2.0584e-10
+          ]
+        }
+      }
+    }
+    HingeJoint {
+      jointParameters HingeJointParameters {
+        axis 4e-06 1 0
+        anchor -0.37474 0 -0.37
+      }
+      device [
+        RotationalMotor {
+          name "joint_rear_wheel"
+          maxVelocity 200
+          minPosition -1000000
+          maxPosition 10000000
+          maxTorque 10000
+        }
+        PositionSensor {
+          name "joint_rear_wheel_sensor"
+        }
+      ]
+      endPoint Solid {
+        translation -0.37474 0 -0.37
+        rotation 0.5773496025226483 0.5773496025226483 -0.5773516025212714 2.0943989999999997
+        children [
+          Shape {
+            appearance DEF rear_wheel_material PBRAppearance {
+              baseColor 0.69804 0.69804 0.69804
+              roughness 1
+              metalness 0
+            }
+            geometry DEF rear_wheel Mesh {
+              url [
+                "/usr/share/robot_description/bike/meshes/rear_wheel.STL"
+              ]
+            }
+          }
+        ]
+        name "rear_wheel"
+        boundingObject Cylinder {
+          height 0.03
+          radius 0.33
+        }
+        physics Physics {
+          density -1
+          mass 1.5911
+          centerOfMass [
+            0 0 0
+          ]
+          inertiaMatrix [
+            0.064566 0.064566 0.12861
+            2.6239e-17 2.3271e-20 -1.496e-20
+          ]
+        }
+      }
+    }
+  ]
+  name "bike_webots"
+  boundingObject USE base_link
+  physics Physics {
+    density -1
+    mass 8.5884
+    centerOfMass [
+      0.058013 2e-06 -0.18889
+    ]
+    inertiaMatrix [
+      0.26235 0.75125 0.50128
+      1.7411e-06 -0.20526 1.4708e-06
+    ]
+  }
+  controller "<extern>"
+}

@@ -13,6 +13,7 @@ find_package(CUDA REQUIRED)
 include_directories()
 include_directories(/usr/local/cuda/include)
 link_directories(/usr/local/cuda/lib64)
+include_directories(my_controller_module/Pid/Cpp/include)
 
 # generate parameter listener hpp file
 generate_parameter_library(tita_controller_parameters
@@ -42,8 +43,12 @@ set(TENSORRT_CUDA_FILES
   src/tensorrt_cuda/tensor_cuda_test.cpp
 )
 
+set(MY_CONTROLLER_FILES
+  my_controller_module/Pid/Cpp/source/PIDmethod.cpp
+)
+
 ament_auto_add_library(${PROJECT_NAME} SHARED
-  ${ESTIMATOR_FILES} ${FSM_FILES} ${LQR_FILES} ${PLANNER_FILES} ${WBC_FILES} ${TENSORRT_CUDA_FILES}
+  ${ESTIMATOR_FILES} ${FSM_FILES} ${LQR_FILES} ${PLANNER_FILES} ${WBC_FILES} ${TENSORRT_CUDA_FILES} ${MY_CONTROLLER_FILES}
   src/tita_controller_node.cpp
 )
 if(DEBUG)

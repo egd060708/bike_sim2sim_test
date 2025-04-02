@@ -4,6 +4,7 @@
 #include <thread>
 #include "FSMState.h"
 #include "tensorrt_cuda/tensor_cuda_test.hpp"
+#include "../my_controller_module/Pid/Cpp/include/PIDmethod.h"
 
 #define NUM_OBS 18
 #define OBS_BUF 10
@@ -74,11 +75,13 @@ private:
   float x_vel_cmd_;
   float heading_cmd_;
   std::string model_name;
+
+  PIDmethod heading_pid;
 private:
   ModelParams params_;
   Observations obs_;
 
-  void _Forward();
+  void _Forward(bool _is_init);
   void _Run_Forward();
 
   std::shared_ptr<CudaTest> cuda_test_;
@@ -94,7 +97,7 @@ private:
   std::shared_ptr<float[]> output_last;
   std::shared_ptr<float[]> input_1_temp;
 
-  void _GetObs();
+  void _GetObs(bool _is_init);
   Vec3<double> a_l;
 
   float action[NUM_OUTPUT];
