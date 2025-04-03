@@ -76,8 +76,8 @@ FSMState_TraditionCtrl::FSMState_TraditionCtrl(std::shared_ptr<ControlFSMData> d
   this->bike_pid_params.motor_imax[1] = 0.;
   this->bike_pid_params.motor_lim[1] = 30.;
 
-  this->bike_pid_params.motor_kp[2] = 20.;
-  this->bike_pid_params.motor_ki[2] = 5.;
+  this->bike_pid_params.motor_kp[2] = 10.;
+  this->bike_pid_params.motor_ki[2] = 2.;
   this->bike_pid_params.motor_kd[2] = -0.2;
   this->bike_pid_params.motor_imax[2] = 10.;
   this->bike_pid_params.motor_lim[2] = 30.;
@@ -228,9 +228,7 @@ void FSMState_TraditionCtrl::_high_level_pid_cal()
   this->bike_heading_pid[1].target = this->bike_state.ref_yawVel;
   this->bike_heading_pid[1].current = this->bike_state.obs_yawVel;
   this->bike_heading_pid[1].Adjust(0);
-  std::cout << "target: " << this->bike_heading_pid[1].target << std::endl;
-  std::cout << "current: " << this->bike_heading_pid[1].current << std::endl;
-  std::cout << "out: " << this->bike_heading_pid[1].out << std::endl;
+
   if (this->bike_pid_params.heading_enList[1] == true)
   {
     this->bike_state.ref_roll = this->bike_heading_pid[1].out;
@@ -266,6 +264,9 @@ void FSMState_TraditionCtrl::_low_level_pid_cal()
   this->bike_motor_pid[2].target = this->bike_state.ref_v / this->bike_state.wheel_radius;
   this->bike_motor_pid[2].current = this->bike_state.dof_vel[2];
   this->bike_motor_pid[2].Adjust(0, this->bike_state.dof_vel[2]);
+  std::cout << "target: " << this->bike_motor_pid[2].target << std::endl;
+  std::cout << "current: " << this->bike_motor_pid[2].current << std::endl;
+  std::cout << "out: " << this->bike_motor_pid[2].out << std::endl;
 }
 
 void FSMState_TraditionCtrl::_pid_actuate()
