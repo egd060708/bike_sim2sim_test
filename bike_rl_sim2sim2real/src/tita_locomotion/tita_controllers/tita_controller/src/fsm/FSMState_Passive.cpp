@@ -50,6 +50,9 @@ FSMStateName FSMState_Passive::checkTransition()
       case FSMStateName::RL:
         this->_nextStateName = FSMStateName::RL;
         break;
+      case FSMStateName::TRADITION_CTRL:
+        this->_nextStateName = FSMStateName::TRADITION_CTRL;
+        break;
 
       default:
         break;

@@ -29,7 +29,7 @@ struct ModelParams
     float torque_limits[NUM_OUTPUT];
     float d_gains[NUM_OUTPUT];
     float p_gains[NUM_OUTPUT];
-    float commands_scale[3];
+    float commands_scale[4];
     float default_dof_pos[NUM_OUTPUT];
 };
 // 观测数据维度

@@ -93,6 +93,8 @@ void DesiredStateCommand::convertFSMState()
     desire_data_->fsm_state_name = FSMStateName::JOINT_PD;
   } else if (rc_data_->fsm_name_ == "rl") {
     desire_data_->fsm_state_name = FSMStateName::RL;
+  } else if (rc_data_->fsm_name_ == "traditional_ctrl") {
+    desire_data_->fsm_state_name = FSMStateName::TRADITION_CTRL;
   }
 } 
 void DesiredStateCommand::convertToStateCommands(std::shared_ptr<RemoteControlData> data)

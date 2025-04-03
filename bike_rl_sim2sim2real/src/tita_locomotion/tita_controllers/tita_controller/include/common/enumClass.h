@@ -17,6 +17,7 @@ enum class FSMStateName {
   FRONTJUMP,
   TRANSFORM_DOWN,
   RL,
+  TRADITION_CTRL
 };
 
 enum point { X, Y, Z };

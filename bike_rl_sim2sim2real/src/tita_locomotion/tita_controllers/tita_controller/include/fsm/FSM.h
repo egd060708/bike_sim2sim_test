@@ -7,6 +7,7 @@
 #include "FSMState_RecoveryStand.h"
 #include "FSMState_TransformDown.h"
 #include "FSMState_RL.h"
+#include "FSMState_TraditionCtrl.h"
 #include "common/enumClass.h"
 
 struct FSMStateList
@@ -18,6 +19,7 @@ struct FSMStateList
   FSMState_JointPD * jointPD;
   FSMState_TransformDown * transformDown;
   FSMState_RL * rl;
+  FSMState_TraditionCtrl * traditionCtrl;
 
   void deletePtr()
   {
@@ -28,6 +30,7 @@ struct FSMStateList
     delete jointPD;
     delete transformDown;
     delete rl;
+    delete traditionCtrl;
   }
 };
 

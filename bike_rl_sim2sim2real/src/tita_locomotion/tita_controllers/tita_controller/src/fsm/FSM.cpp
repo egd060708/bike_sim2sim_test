@@ -11,6 +11,7 @@ FSM::FSM(std::shared_ptr<ControlFSMData> data) : _data(data)
   _stateList.jointPD = new FSMState_JointPD(_data);
   _stateList.transformDown = new FSMState_TransformDown(_data);
   _stateList.rl = new FSMState_RL(_data);
+  _stateList.traditionCtrl = new FSMState_TraditionCtrl(_data);
   initialize();
 }
 
@@ -80,6 +81,9 @@ FSMState * FSM::getNextState(FSMStateName stateName)
       break;
     case FSMStateName::RL:
       return _stateList.rl;
+      break;
+    case FSMStateName::TRADITION_CTRL:
+      return _stateList.traditionCtrl;
       break;
     default:
       return _stateList.passive;

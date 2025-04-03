@@ -105,6 +105,9 @@ void KeyboardControllerNode::ReadKeyThread()
       case '3':
         fsm_goal_.data = "transform_down";
         break;
+      case '4':
+        fsm_goal_.data = "traditional_ctrl";
+        break;
       case 'w':
         twist_.linear.x += STEP_ACCL_X * speed_scale_;
         break;

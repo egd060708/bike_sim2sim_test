@@ -1,15 +1,13 @@
 /*============================= RL ==============================*/
 /**
- * Transitionary state that is called for the robot to stand up into
- * balance control mode.
+ * Control state use reinforcement learning model.
  */
 
 #include "fsm/FSMState_RL.h"
 #include "common/timeMarker.h"
 
 /**
- * FSM State that calls no controls. Meant to be a safe state where the
- * robot should not do anything as all commands will be set to 0.
+ * FSM State that use reinforcement learning controller. 
  */
 
 FSMState_RL::FSMState_RL(std::shared_ptr<ControlFSMData> data)
@@ -22,10 +20,10 @@ FSMState_RL::FSMState_RL(std::shared_ptr<ControlFSMData> data)
 {
   // this->cuda_test_ = std::make_shared<CudaTest>(data->params->model_engine_path);
   this->model_name = data->params->model_engine_path;
-  // std::cout << "111111111111111111111111111111111111111111111111111111" << std::endl;
+
   this->cuda_test_ = std::make_shared<CudaTest>("/home/lu/Git_Project/gitlab/bike_rl/engine/17model_10000_simple.engine");
   std::cout << "cuda init :" << this->cuda_test_->get_cuda_init() << std::endl;
-  // std::cout << "222222222222222222222222222222222222222222222222222222" << std::endl;
+
   // this->params_.p_gains[0] = data->params->turn_kp;
   // this->params_.p_gains[1] = data->params->wheel_kp;
   // this->params_.p_gains[2] = data->params->wheel_kp;
@@ -36,7 +34,7 @@ FSMState_RL::FSMState_RL(std::shared_ptr<ControlFSMData> data)
   // init pid tick and params mode
   this->heading_pid.getMicroTick_regist(getSystemTime);
   this->heading_pid.PID_Init(Common,0);
-  this->heading_pid.Params_Config(0.75,0.,0.,0.5,1.5,-1.5);
+  this->heading_pid.Params_Config(0.5,0.,0.,0.5,1.5,-1.5);
   // this->heading_pid.integral = 0.3/0.01;
   this->heading_pid.d_of_current = false;
 }
@@ -51,7 +49,7 @@ void FSMState_RL::enter()
   {
     this->desired_pos[i] = this->_data->low_state->q[i];
     this->obs_.dof_pos[i] = this->_data->low_state->q[i];
-    this->obs_.dof_vel[i] = this->_data->low_state->d
+    this->obs_.dof_vel[i] = this->_data->low_state->dq[i];
   }
 
   this->params_.action_scale = 0.25;
@@ -63,6 +61,7 @@ void FSMState_RL::enter()
   this->params_.commands_scale[0] = this->params_.lin_vel_scale;
   this->params_.commands_scale[1] = this->params_.lin_vel_scale;
   this->params_.commands_scale[2] = this->params_.ang_vel_scale;
+  this->params_.commands_scale[3] = this->params_.lin_vel_scale;
   this->params_.p_gains[0] = 40;
   this->params_.p_gains[1] = 10;
 
@@ -180,6 +179,10 @@ FSMStateName FSMState_RL::checkTransition()
   case FSMStateName::RL: // normal c
     break;
 
+  case FSMStateName::TRADITION_CTRL:
+  this->_nextStateName = FSMStateName::TRADITION_CTRL;
+    break;
+
   case FSMStateName::TRANSFORM_DOWN:
     this->_nextStateName = FSMStateName::TRANSFORM_DOWN;
     break;
@@ -221,6 +224,14 @@ void FSMState_RL::_GetObs(bool _is_init)
 
   std::cout << "angvelC: " << angvel(0) << ", " << angvel(1) << ", " << angvel(2) << std::endl;
 
+  if(NUM_OBS==22)
+  {
+    for (int i = 0; i < 3; ++i)
+    {
+      obs_tmp.push_back(projected_forward(i));
+    }
+  }
+
   for (int i = 0; i < 3; ++i)
   {
     obs_tmp.push_back(projected_gravity(i));
@@ -254,15 +265,14 @@ void FSMState_RL::_GetObs(bool _is_init)
     angle_err = 0;
   }
   
-  // angle_err = (double)this->heading_cmd_;
   obs_tmp.push_back(this->x_vel_cmd_ * this->params_.commands_scale[0]);
   obs_tmp.push_back(0.0);
   obs_tmp.push_back(angle_err * this->params_.commands_scale[2]);
-  // obs_tmp.push_back(this->x_vel_cmd_ * this->params_.commands_scale[0]);
-  // obs_tmp.push_back(angle * this->params_.commands_scale[0]);
-  // obs_tmp.push_back(0.0);
+  if(NUM_OBS == 22)
+  {
+    obs_tmp.push_back((double)this->heading_cmd_);
+  }
   
-  // std::cout << "model_path: " << this->model_name << std::endl;
 
   // pos
   for (int i = 0; i < NUM_OUTPUT; ++i)

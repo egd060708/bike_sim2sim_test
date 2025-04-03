@@ -272,6 +272,12 @@ FSMStateName FSMState_RecoveryStand::checkTransition()
       if ((int)(_state_iter - fold_ramp_iter - standup_ramp_iter) >= 100)
         this->_nextStateName = FSMStateName::RL;
       break;
+
+    case FSMStateName::TRADITION_CTRL:  // normal c
+      if ((int)(_state_iter - fold_ramp_iter - standup_ramp_iter) >= 100)
+        this->_nextStateName = FSMStateName::TRADITION_CTRL;
+      break; 
+
     default:
       break;
       // default:

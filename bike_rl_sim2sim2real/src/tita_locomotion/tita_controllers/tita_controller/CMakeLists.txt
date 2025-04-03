@@ -33,6 +33,7 @@ set(FSM_FILES
   src/fsm/FSMState_RecoveryStand.cpp
   src/fsm/FSMState_TransformDown.cpp
   src/fsm/FSMState_RL.cpp
+  src/fsm/FSMState_TraditionCtrl.cpp
 )
 
 set(PLANNER_FILES
