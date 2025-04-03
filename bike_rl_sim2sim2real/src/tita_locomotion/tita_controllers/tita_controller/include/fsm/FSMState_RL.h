@@ -6,7 +6,7 @@
 #include "tensorrt_cuda/tensor_cuda_test.hpp"
 #include "../my_controller_module/Pid/Cpp/include/PIDmethod.h"
 
-#define NUM_OBS 18
+#define NUM_OBS 22
 #define OBS_BUF 10
 #define NUM_OUTPUT 3
 /**
