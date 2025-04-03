@@ -18,8 +18,8 @@ FSMState_TraditionCtrl::FSMState_TraditionCtrl(std::shared_ptr<ControlFSMData> d
   this->bike_pid_params.motor_enList[2] = true;
 
   // use direct roll ctrl
-  this->bike_pid_params.heading_enList[0] = false;
-  this->bike_pid_params.heading_enList[1] = false;
+  this->bike_pid_params.heading_enList[0] = true;
+  this->bike_pid_params.heading_enList[1] = true;
 
   // pid init
   this->bike_balance_pid.PID_Init(Common, 0);
@@ -44,17 +44,17 @@ FSMState_TraditionCtrl::FSMState_TraditionCtrl(std::shared_ptr<ControlFSMData> d
   this->bike_pid_params.balance_imax = 0.5;
   this->bike_pid_params.balance_lim = 2.;
 
-  this->bike_pid_params.heading_kp[0] = 1.;
+  this->bike_pid_params.heading_kp[0] = 0.5;
   this->bike_pid_params.heading_ki[0] = 0.;
-  this->bike_pid_params.heading_kd[0] = 0.;
+  this->bike_pid_params.heading_kd[0] = -0.;
   this->bike_pid_params.heading_imax[0] = 0.;
-  this->bike_pid_params.heading_lim[0] = 1.5;
+  this->bike_pid_params.heading_lim[0] = 1.;
 
-  this->bike_pid_params.heading_kp[1] = -0.5;
-  this->bike_pid_params.heading_ki[1] = 0.;
+  this->bike_pid_params.heading_kp[1] = 0.;
+  this->bike_pid_params.heading_ki[1] = -0.2;
   this->bike_pid_params.heading_kd[1] = 0.;
-  this->bike_pid_params.heading_imax[1] = 0.;
-  this->bike_pid_params.heading_lim[1] = 0.2;
+  this->bike_pid_params.heading_imax[1] = 0.15;
+  this->bike_pid_params.heading_lim[1] = 0.15;
 
   // high gain
   // this->bike_pid_params.motor_kp[0] = 40.;
@@ -64,7 +64,7 @@ FSMState_TraditionCtrl::FSMState_TraditionCtrl(std::shared_ptr<ControlFSMData> d
   // this->bike_pid_params.motor_lim[0] = 20.;
 
   // low gain
-  this->bike_pid_params.motor_kp[0] = 30.;
+  this->bike_pid_params.motor_kp[0] = 20.;
   this->bike_pid_params.motor_ki[0] = 0.;
   this->bike_pid_params.motor_kd[0] = -2.;
   this->bike_pid_params.motor_imax[0] = 0.;
@@ -228,6 +228,9 @@ void FSMState_TraditionCtrl::_high_level_pid_cal()
   this->bike_heading_pid[1].target = this->bike_state.ref_yawVel;
   this->bike_heading_pid[1].current = this->bike_state.obs_yawVel;
   this->bike_heading_pid[1].Adjust(0);
+  std::cout << "target: " << this->bike_heading_pid[1].target << std::endl;
+  std::cout << "current: " << this->bike_heading_pid[1].current << std::endl;
+  std::cout << "out: " << this->bike_heading_pid[1].out << std::endl;
   if (this->bike_pid_params.heading_enList[1] == true)
   {
     this->bike_state.ref_roll = this->bike_heading_pid[1].out;
@@ -246,17 +249,18 @@ void FSMState_TraditionCtrl::_low_level_pid_cal()
   this->bike_balance_pid.target = this->bike_state.ref_roll;
   this->bike_balance_pid.current = this->bike_state.obs_roll;
   this->bike_balance_pid.Adjust(0, this->bike_state.obs_rollVel);
-  double real_v = this->bike_state.obs_v;
-  // std::cout << "current_v" << real_v << std::endl;
-  real_v = 1.;
+  double real_v = this->bike_state.dof_vel[2]*0.33*0.7;
+  // avoid approach 0
+  if(real_v<0.5)
+  {
+    real_v=0.5;
+  }
   double ref_com_angle = asin(upper::constrain(this->bike_balance_pid.out * this->bike_state.com_dist / pow(real_v, 2),0.99));
   // ref_com_angle = upper::constrain(ref_com_angle,this->bike_pid_params.balance_lim);
   this->bike_motor_pid[0].target = upper::constrain(atan(this->bike_state.wheel_dist / this->bike_state.com_dist * tan(ref_com_angle)),this->bike_pid_params.balance_lim);
   // this->bike_motor_pid[0].target = -this->bike_state.ref_roll;
   this->bike_motor_pid[0].current = this->bike_state.dof_pos[0];
   this->bike_motor_pid[0].Adjust(0, this->bike_state.dof_vel[0]);
-  std::cout << "target: " << this->bike_motor_pid[0].target << std::endl;
-  std::cout << "current: " << this->bike_motor_pid[0].current << std::endl;
 
   // task2: rear motor velocity error -> rear motor pid
   this->bike_motor_pid[2].target = this->bike_state.ref_v / this->bike_state.wheel_radius;
