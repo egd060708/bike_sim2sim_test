@@ -31,8 +31,22 @@ typedef struct _PidParams
 // params for lqr
 typedef struct _LqrParams
 {
+  double heading_kp[2] = {0};
+  double heading_ki[2] = {0};
+  double heading_kd[2] = {0};
+  double heading_imax[2] = {0};
+  double heading_lim[2] = {0};
+  bool heading_enList[2] = {false};
 
-}_LqrParams;
+  double motor_kp[3] = {0};
+  double motor_ki[3] = {0};
+  double motor_kd[3] = {0};
+  double motor_imax[3] = {0};
+  double motor_lim[3] = {0};
+  bool motor_enList[3] = {false};
+
+  Fit_Params lqrs[3] = {0};// 3 state
+}LqrParams;
 
 // bike states
 typedef struct _BikeCtrlState
@@ -47,9 +61,13 @@ typedef struct _BikeCtrlState
   double obs_yaw;
   double ref_yawVel;
   double obs_yawVel;
+  double ref_turn;
+  double obs_turn;
 
   double wheel_dist;
   double com_dist;
+  double com_weight;
+  double com_height;
   double wheel_radius;
 
   double dof_pos[3] = {0};
@@ -69,19 +87,31 @@ public:
   FSMStateName checkTransition();
 
 private:
-  PIDmethod bike_motor_pid[3];
-  PIDmethod bike_heading_pid[2];
-  PIDmethod bike_balance_pid;
-  PidParams bike_pid_params;
+  // state update
+  void _bike_state_update();
   BikeCtrlState bike_state;
 
-  void _bike_state_update();
+  // generate controller
+  PIDmethod bike_motor_pid[3];
+  PIDmethod bike_heading_pid[2];
 
+  // pid controller
+  PIDmethod bike_balance_pid;
+  PidParams bike_pid_params;
   void _pid_params_update();
   void _high_level_pid_cal();
   void _low_level_pid_cal();
   void _pid_actuate();
 
+  // lqr controller
+  PIDmethod bike_lqr_pid[3];
+  LqrParams bike_lqr_params;
+  void _lqr_params_update();
+  void _high_level_lqr_cal();
+  void _low_level_lqr_cal();
+  void _lqr_actuate();
+
+  int ctrl_mode = 0;
 };
 
 #endif
