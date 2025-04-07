@@ -188,7 +188,15 @@ void KeyboardControllerNode::ReadKeyThread()
     speed_scale_ = clamp(speed_scale_, 0.1, 4.0);
     pose_scale_ = clamp(pose_scale_, 0.1, 4.0);
     twist_.linear.x = clamp(twist_.linear.x, -MAX_VEL_X, MAX_VEL_X);
-    twist_.angular.z = clamp(twist_.angular.z, -MAX_VEL_W, MAX_VEL_W);
+    // twist_.angular.z = clamp(twist_.angular.z, -MAX_VEL_W, MAX_VEL_W);
+    if(twist_.angular.z>MAX_VEL_W)
+    {
+      twist_.angular.z = -MAX_VEL_W;
+    }
+    else if(twist_.angular.z<-MAX_VEL_W)
+    {
+      twist_.angular.z = MAX_VEL_W;
+    }
     for (size_t i = 0; i < 3; i++) {
       rpy_[i] = clamp(rpy_[i], -MAX_ORIENTATION, MAX_ORIENTATION);
     }

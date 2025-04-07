@@ -21,7 +21,7 @@ FSMState_RL::FSMState_RL(std::shared_ptr<ControlFSMData> data)
   // this->cuda_test_ = std::make_shared<CudaTest>(data->params->model_engine_path);
   this->model_name = data->params->model_engine_path;
 
-  this->cuda_test_ = std::make_shared<CudaTest>("/home/lu/Git_Project/gitlab/bike_rl/engine/head_5model_5500.engine");
+  this->cuda_test_ = std::make_shared<CudaTest>("/home/lu/Git_Project/gitlab/bike_rl/engine/head_17model_12000.engine");
   std::cout << "cuda init :" << this->cuda_test_->get_cuda_init() << std::endl;
 
   // this->params_.p_gains[0] = data->params->turn_kp;
@@ -62,16 +62,17 @@ void FSMState_RL::enter()
   this->params_.commands_scale[1] = this->params_.lin_vel_scale;
   this->params_.commands_scale[2] = this->params_.ang_vel_scale;
   this->params_.commands_scale[3] = this->params_.lin_vel_scale;
-  this->params_.p_gains[0] = 40;
-  this->params_.p_gains[1] = 10;
 
-  this->params_.d_gains[0] = 5.;
-  this->params_.d_gains[1] = 1.;
+  this->params_.p_gains[0] = 20;
+  this->params_.d_gains[0] = 2.;
+
+  this->params_.p_gains[2] = 10;
+  this->params_.d_gains[2] = 1.;
 
   if(NUM_OUTPUT == 3)
   {
-    this->params_.p_gains[2] = 10;
-    this->params_.d_gains[2] = 1.;
+    this->params_.p_gains[1] = 10;
+    this->params_.d_gains[1] = 1.;
   }
 
   // const float default_dof_pos_tmp[NUM_OUTPUT] = {0.};
