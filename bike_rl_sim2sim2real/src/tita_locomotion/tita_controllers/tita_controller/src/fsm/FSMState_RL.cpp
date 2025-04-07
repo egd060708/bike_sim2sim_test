@@ -21,7 +21,7 @@ FSMState_RL::FSMState_RL(std::shared_ptr<ControlFSMData> data)
   // this->cuda_test_ = std::make_shared<CudaTest>(data->params->model_engine_path);
   this->model_name = data->params->model_engine_path;
 
-  this->cuda_test_ = std::make_shared<CudaTest>("/home/lu/Git_Project/gitlab/bike_rl/engine/head_17model_12000.engine");
+  this->cuda_test_ = std::make_shared<CudaTest>("/home/lu/Git_Project/gitlab/bike_rl/engine/head_15model_6000.engine");
   std::cout << "cuda init :" << this->cuda_test_->get_cuda_init() << std::endl;
 
   // this->params_.p_gains[0] = data->params->turn_kp;
