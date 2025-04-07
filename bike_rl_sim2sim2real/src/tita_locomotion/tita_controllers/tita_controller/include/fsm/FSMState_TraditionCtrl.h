@@ -1,6 +1,7 @@
 #ifndef FSMSTATE_TRADITIONCTRL_H
 #define FSMSTATE_TRADITIONCTRL_H
 
+#include <thread>
 #include "FSMState.h"
 #include "../my_controller_module/Pid/Cpp/include/PIDmethod.h"
 
@@ -112,6 +113,13 @@ private:
   void _lqr_actuate();
 
   int ctrl_mode = 0;
+
+  // controller thread
+  std::thread forward_thread;
+  bool threadRunning;
+  bool stop_update_ = false;
+  bool thread_first_ = true;
+  void _controller_loop();
 };
 
 #endif

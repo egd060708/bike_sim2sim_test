@@ -18,8 +18,8 @@ FSMState_TraditionCtrl::FSMState_TraditionCtrl(std::shared_ptr<ControlFSMData> d
   this->bike_pid_params.motor_enList[2] = true;
 
   // use direct roll ctrl
-  this->bike_pid_params.heading_enList[0] = false;
-  this->bike_pid_params.heading_enList[1] = false;
+  this->bike_pid_params.heading_enList[0] = true;
+  this->bike_pid_params.heading_enList[1] = true;
 
   // pid controller pid init
   this->bike_balance_pid.PID_Init(Common, 0);
@@ -176,6 +176,14 @@ void FSMState_TraditionCtrl::enter()
   
   // update body state
   this->_bike_state_update();
+
+  this->threadRunning = true;
+  if (this->thread_first_)
+  {
+    this->forward_thread = std::thread(&FSMState_TraditionCtrl::_controller_loop, this);
+    this->thread_first_ = false;
+  }
+  this->stop_update_ = false;
 }
 
 void FSMState_TraditionCtrl::run()
@@ -186,18 +194,18 @@ void FSMState_TraditionCtrl::run()
   this->_data->low_cmd->kd.setZero();
   this->_data->low_cmd->tau_cmd.setZero();
 
-  if(this->ctrl_mode == 0)
-  {
-    // set pid params
-    this->_pid_params_update();
-  }
-  else
-  {
-    // set lqr params
-    this->_lqr_params_update();
-  }
-  // update body state
-  this->_bike_state_update();
+  // if(this->ctrl_mode == 0)
+  // {
+  //   // set pid params
+  //   this->_pid_params_update();
+  // }
+  // else
+  // {
+  //   // set lqr params
+  //   this->_lqr_params_update();
+  // }
+  // // update body state
+  // this->_bike_state_update();
 
   // update commands
   this->bike_state.ref_v = this->_data->state_command->rc_data_->twist_linear[point::X];
@@ -207,20 +215,20 @@ void FSMState_TraditionCtrl::run()
   this->bike_state.ref_rollVel = 0.;
   this->bike_state.ref_turn = 0.;
 
-  if(this->ctrl_mode == 0)
-  {
-    // use pid controller
-    this->_high_level_pid_cal();
-    this->_low_level_pid_cal();
-    this->_pid_actuate();
-  }
-  else
-  {
-    // use pid controller
-    this->_high_level_lqr_cal();
-    this->_low_level_lqr_cal();
-    this->_lqr_actuate();
-  }
+  // if(this->ctrl_mode == 0)
+  // {
+  //   // use pid controller
+  //   this->_high_level_pid_cal();
+  //   this->_low_level_pid_cal();
+  //   this->_pid_actuate();
+  // }
+  // else
+  // {
+  //   // use pid controller
+  //   this->_high_level_lqr_cal();
+  //   this->_low_level_lqr_cal();
+  //   this->_lqr_actuate();
+  // }
 
   for (int i = 0; i < 3; i++)
   {
@@ -228,7 +236,59 @@ void FSMState_TraditionCtrl::run()
   }
 }
 
-void FSMState_TraditionCtrl::exit() {}
+void FSMState_TraditionCtrl::exit() 
+{
+  this->stop_update_ = true;
+}
+
+void FSMState_TraditionCtrl::_controller_loop()
+{
+  while(this->threadRunning)
+  {
+    long long _start_time = getSystemTime();
+
+    if(!this->stop_update_)
+    {
+      if(this->ctrl_mode == 0)
+      {
+        // set pid params
+        this->_pid_params_update();
+      }
+      else
+      {
+        // set lqr params
+        this->_lqr_params_update();
+      }
+      // update body state
+      this->_bike_state_update();
+
+      // // update commands
+      // this->bike_state.ref_v = this->_data->state_command->rc_data_->twist_linear[point::X];
+      // this->bike_state.ref_yaw = this->_data->state_command->rc_data_->twist_angular[point::Z];
+      // this->bike_state.ref_yawVel = this->_data->state_command->rc_data_->twist_angular[point::Z];
+      // this->bike_state.ref_roll = 0.5 * this->_data->state_command->rc_data_->twist_angular[point::Z];
+      // this->bike_state.ref_rollVel = 0.;
+      // this->bike_state.ref_turn = 0.;
+
+      if(this->ctrl_mode == 0)
+      {
+        // use pid controller
+        this->_high_level_pid_cal();
+        this->_low_level_pid_cal();
+        this->_pid_actuate();
+      }
+      else
+      {
+        // use pid controller
+        this->_high_level_lqr_cal();
+        this->_low_level_lqr_cal();
+        this->_lqr_actuate();
+      }
+    }
+    absoluteWait(_start_time, (long long)(0.002 * 1000000));
+  }
+  this->threadRunning = false;
+}
 
 FSMStateName FSMState_TraditionCtrl::checkTransition()
 {
@@ -323,6 +383,7 @@ void FSMState_TraditionCtrl::_high_level_pid_cal()
   this->bike_heading_pid[0].target = angle_err;
   this->bike_heading_pid[0].current = 0;
   this->bike_heading_pid[0].Adjust(0, this->bike_state.obs_yawVel);
+  std::cout << this->bike_heading_pid[0].dt << std::endl;
 
   // task2: yaw velocity error -> roll error
   if (this->bike_pid_params.heading_enList[0] == true)
