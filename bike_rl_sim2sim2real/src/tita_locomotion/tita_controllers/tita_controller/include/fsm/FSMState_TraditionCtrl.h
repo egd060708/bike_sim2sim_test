@@ -5,6 +5,13 @@
 #include "FSMState.h"
 #include "../my_controller_module/Pid/Cpp/include/PIDmethod.h"
 
+typedef enum _CtrlMode
+{
+  TEST=0,
+  PID,
+  LQR
+}CtrlMode;
+
 // params for pid
 typedef struct _PidParams
 {
@@ -92,6 +99,11 @@ private:
   void _bike_state_update();
   BikeCtrlState bike_state;
 
+  // dof test
+  void _test_params_update();
+  void _test_cal();
+  void _test_actuate();
+
   // generate controller
   PIDmethod bike_motor_pid[3];
   PIDmethod bike_heading_pid[2];
@@ -112,7 +124,8 @@ private:
   void _low_level_lqr_cal();
   void _lqr_actuate();
 
-  int ctrl_mode = 0;
+
+  CtrlMode ctrl_mode = CtrlMode::TEST;
 
   // controller thread
   std::thread forward_thread;

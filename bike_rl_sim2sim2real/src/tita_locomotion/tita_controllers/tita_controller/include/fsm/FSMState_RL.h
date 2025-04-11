@@ -2,6 +2,7 @@
 #define FSMSTATE_RL_H
 
 #include <thread>
+#include <functional>
 #include "FSMState.h"
 #include "tensorrt_cuda/tensor_cuda_test.hpp"
 #include "../my_controller_module/Pid/Cpp/include/PIDmethod.h"
@@ -27,8 +28,8 @@ struct ModelParams
     float clip_obs;
     float clip_actions;
     float torque_limits[NUM_OUTPUT];
-    float d_gains[NUM_OUTPUT];
-    float p_gains[NUM_OUTPUT];
+    // float d_gains[NUM_OUTPUT];
+    // float p_gains[NUM_OUTPUT];
     float commands_scale[4];
     float default_dof_pos[NUM_OUTPUT];
 };
@@ -41,9 +42,27 @@ struct Observations
     float forward_vec[3];       
     float commands[3];        
     float base_quat[4];   
-    float dof_pos[NUM_OUTPUT];           
-    float dof_vel[NUM_OUTPUT];           
+    float dof_pos[NUM_OUTPUT];
+    float dof_pos_last[NUM_OUTPUT];           
+    float dof_vel[NUM_OUTPUT];
+    float dof_vel_last[NUM_OUTPUT];           
     float actions[NUM_OUTPUT];
+};
+enum DofCtrlType
+{
+  P=0,
+  V,
+  T
+};
+// 电机执行维度
+struct DofCtrl
+{
+  DofCtrlType dof_mode = P;
+  float P_p[NUM_OUTPUT];
+  float P_d[NUM_OUTPUT];
+  float V_p[NUM_OUTPUT];
+  float V_d[NUM_OUTPUT];
+  float T_d[NUM_OUTPUT];
 };
 
 class FSMState_RL : public FSMState
@@ -80,14 +99,21 @@ private:
 private:
   ModelParams params_;
   Observations obs_;
+  DofCtrl dofs_;
+  using Dof_Actuate = std::function<void()>;  // 改用 std::function
+  Dof_Actuate dof_actuate[3];  // 存储可调用对象
+  void _P_actuate();
+  void _V_actuate();
+  void _T_actuate();
 
   void _Forward(bool _is_init);
   void _Run_Forward();
+  void _Run_Lowlevel();
 
   std::shared_ptr<CudaTest> cuda_test_;
 
-  std::thread forward_thread;
-  bool threadRunning;
+  std::thread ctrl_thread[2];
+  bool threadRunning[2] = {false,false};
   float desired_pos[NUM_OUTPUT] = {0.};
   
   std::shared_ptr<float[]> input_0;
@@ -101,10 +127,13 @@ private:
   Vec3<double> a_l;
 
   float action[NUM_OUTPUT];
+  float action_last[NUM_OUTPUT];
+  float torques[3] = {0};
 
-  bool stop_update_ = false;
-  bool thread_first_ = true;
+  bool stop_update_[2] = {false,false};
+  bool thread_first_[2] = {true,true};
   
+  bool use_lpf_actions = false;
 };
 
 #endif  // FSMSTATE_RL_H

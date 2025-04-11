@@ -7,7 +7,7 @@
 #include "common/timeMarker.h"
 
 /**
- * FSM State that use reinforcement learning controller. 
+ * FSM State that use reinforcement learning controller.
  */
 
 FSMState_RL::FSMState_RL(std::shared_ptr<ControlFSMData> data)
@@ -33,10 +33,20 @@ FSMState_RL::FSMState_RL(std::shared_ptr<ControlFSMData> data)
 
   // init pid tick and params mode
   this->heading_pid.getMicroTick_regist(getSystemTime);
-  this->heading_pid.PID_Init(Common,0);
-  this->heading_pid.Params_Config(0.5,0.,0.,0.5,1.5,-1.5);
+  this->heading_pid.PID_Init(Common, 0);
+  this->heading_pid.Params_Config(0.5, 0., 0., 0.5, 1.5, -1.5);
   // this->heading_pid.integral = 0.3/0.01;
   this->heading_pid.d_of_current = false;
+
+  // 使用 Lambda 捕获 this 指针
+  this->dof_actuate[0] = [this]()
+  { this->_P_actuate(); };
+  this->dof_actuate[1] = [this]()
+  { this->_V_actuate(); };
+  this->dof_actuate[2] = [this]()
+  { this->_T_actuate(); };
+  // 配置关节执行模式
+  this->dofs_.dof_mode = DofCtrlType::P;
 }
 
 void FSMState_RL::enter()
@@ -44,6 +54,7 @@ void FSMState_RL::enter()
   // std::cout << "rl state enter" << std::endl;
 
   this->_data->state_command->firstRun = true;
+  this->use_lpf_actions = true;
 
   for (int i = 0; i < NUM_OUTPUT; i++)
   {
@@ -63,16 +74,31 @@ void FSMState_RL::enter()
   this->params_.commands_scale[2] = this->params_.ang_vel_scale;
   this->params_.commands_scale[3] = this->params_.lin_vel_scale;
 
-  this->params_.p_gains[0] = 20;
-  this->params_.d_gains[0] = 2.;
-
-  this->params_.p_gains[2] = 10;
-  this->params_.d_gains[2] = 1.;
-
-  if(NUM_OUTPUT == 3)
+  this->dofs_.P_p[0] = 20;
+  this->dofs_.P_d[0] = 2.;
+  this->dofs_.P_p[1] = 10;
+  this->dofs_.P_d[1] = 1.;
+  if (NUM_OUTPUT == 3)
   {
-    this->params_.p_gains[1] = 10;
-    this->params_.d_gains[1] = 1.;
+    this->dofs_.P_p[2] = 10;
+    this->dofs_.P_d[2] = 1.;
+  }
+
+  this->dofs_.V_p[0] = 10.;
+  this->dofs_.V_d[0] = 0.02;
+  this->dofs_.V_p[1] = 10.;
+  this->dofs_.V_d[1] = 0.015;
+  if (NUM_OUTPUT == 3)
+  {
+    this->dofs_.V_p[2] = 10.;
+    this->dofs_.V_d[2] = 0.015;
+  }
+
+  this->dofs_.T_d[0] = 0.3;
+  this->dofs_.T_d[1] = 0.2;
+  if (NUM_OUTPUT == 3)
+  {
+    this->dofs_.T_d[2] = 0.2;
   }
 
   // const float default_dof_pos_tmp[NUM_OUTPUT] = {0.};
@@ -116,13 +142,26 @@ void FSMState_RL::enter()
     this->_Forward(true);
   }
 
-  this->threadRunning = true;
-  if (this->thread_first_)
+  this->threadRunning[0] = true;
+  this->threadRunning[1] = true;
+  if (this->thread_first_[0])
   {
-    this->forward_thread = std::thread(&FSMState_RL::_Run_Forward, this);
-    this->thread_first_ = false;
+    this->ctrl_thread[0] = std::thread(&FSMState_RL::_Run_Forward, this);
+    this->thread_first_[0] = false;
   }
-  this->stop_update_ = false;
+
+  if (this->thread_first_[1])
+  {
+    this->ctrl_thread[1] = std::thread(&FSMState_RL::_Run_Lowlevel, this);
+    this->thread_first_[1] = false;
+  }
+  this->stop_update_[0] = false;
+  this->stop_update_[1] = false;
+
+  for (int i = 0; i < 3; i++)
+  {
+    this->torques[i] = 0;
+  }
 }
 
 void FSMState_RL::run()
@@ -138,31 +177,24 @@ void FSMState_RL::run()
   this->_data->low_cmd->kp.setZero();
   this->_data->low_cmd->kd.setZero();
   this->_data->low_cmd->tau_cmd.setZero();
+
+  for(int i=0;i<NUM_OUTPUT;i++)
+  {
+    this->_data->low_cmd->tau_cmd[i] = this->torques[i];
+  }
+
   for (int i = 0; i < NUM_OUTPUT; i++)
   {
-    if (i == 0)
-    {
-      this->_data->low_cmd->tau_cmd[i] = this->params_.p_gains[i] * (this->desired_pos[i] - this->_data->low_state->q[i]) + this->params_.d_gains[i] * (0 - this->_data->low_state->dq[i]);
-    }
-    else
-    {
-      if(NUM_OUTPUT == 2)
-      {
-        this->_data->low_cmd->tau_cmd[2] = this->params_.p_gains[i] * this->desired_pos[i] + this->params_.d_gains[i] * (0 - this->_data->low_state->dq[i]);
-        this->_data->low_cmd->tau_cmd[1] = 0;
-      }
-      else
-      {
-        this->_data->low_cmd->tau_cmd[i] = this->params_.p_gains[i] * this->desired_pos[i] + this->params_.d_gains[i] * (0 - this->_data->low_state->dq[i]);
-      }
-    }
+    this->obs_.dof_pos_last[i] = this->obs_.dof_pos[i];
+    this->obs_.dof_vel_last[i] = this->obs_.dof_vel[i];
   }
 }
 
 void FSMState_RL::exit()
 {
   // std::cout << "rl state exit" << std::endl;
-  this->stop_update_ = true;
+  this->stop_update_[0] = true;
+  this->stop_update_[1] = true;
 }
 
 FSMStateName FSMState_RL::checkTransition()
@@ -181,7 +213,7 @@ FSMStateName FSMState_RL::checkTransition()
     break;
 
   case FSMStateName::TRADITION_CTRL:
-  this->_nextStateName = FSMStateName::TRADITION_CTRL;
+    this->_nextStateName = FSMStateName::TRADITION_CTRL;
     break;
 
   case FSMStateName::TRANSFORM_DOWN:
@@ -223,9 +255,9 @@ void FSMState_RL::_GetObs(bool _is_init)
   obs_tmp.push_back(angvel(1) * this->params_.ang_vel_scale);
   obs_tmp.push_back(angvel(2) * this->params_.ang_vel_scale);
 
-  std::cout << "angvelC: " << angvel(0) << ", " << angvel(1) << ", " << angvel(2) << std::endl;
+  // std::cout << "angvelC: " << angvel(0) << ", " << angvel(1) << ", " << angvel(2) << std::endl;
 
-  if(NUM_OBS==22)
+  if (NUM_OBS == 22)
   {
     for (int i = 0; i < 3; ++i)
     {
@@ -239,7 +271,7 @@ void FSMState_RL::_GetObs(bool _is_init)
   }
 
   // cmd
-  double angle_err = (double)this->heading_cmd_ - this->_data->state_estimator->getResult().rpy(2,0);
+  double angle_err = (double)this->heading_cmd_ - this->_data->state_estimator->getResult().rpy(2, 0);
   angle_err = fmod(angle_err, 2.0 * M_PI);
   while (angle_err > M_PI)
   {
@@ -249,31 +281,28 @@ void FSMState_RL::_GetObs(bool _is_init)
   {
     angle_err = angle_err + 2.0 * M_PI;
   }
-  std::cout << "commend: " << this->x_vel_cmd_ << ", " << 0 << ", " << angle_err << std::endl;
-  // angle_err = 0.75 * angle_err;
-  // angle_err = ((angle_err > 1.) ? 1. : (angle_err < -1.) ? -1. : angle_err)/* - 0.35*/;
-  if(_is_init == false)
+
+  if (_is_init == false)
   {
     this->heading_pid.target = angle_err;
     this->heading_pid.current = 0;
     angle_err = this->heading_pid.Adjust(0);
-    std::cout << "i_term: " << this->heading_pid.I_Term << std::endl;
-    std::cout << "out:    " << angle_err << std::endl;
-    std::cout << "dt:     " << this->heading_pid.dt << std::endl;
   }
   else
   {
     angle_err = 0;
   }
-  
+
   obs_tmp.push_back(this->x_vel_cmd_ * this->params_.commands_scale[0]);
   obs_tmp.push_back(0.0);
   obs_tmp.push_back(angle_err * this->params_.commands_scale[2]);
-  if(NUM_OBS == 22)
+  if (NUM_OBS == 22)
   {
     obs_tmp.push_back((double)this->heading_cmd_);
   }
-  
+
+  std::cout << "commend: " << this->x_vel_cmd_ << ", " << this->heading_cmd_ << ", " << angle_err << std::endl;
+  std::cout << "angVel: " << angvel(2) << std::endl;
 
   // pos
   for (int i = 0; i < NUM_OUTPUT; ++i)
@@ -320,11 +349,11 @@ void FSMState_RL::_Forward(bool _is_init)
 
 void FSMState_RL::_Run_Forward()
 {
-  while (this->threadRunning)
+  while (this->threadRunning[0])
   {
     long long _start_time = getSystemTime();
 
-    if (!this->stop_update_)
+    if (!this->stop_update_[0])
     {
       // update current dof positions and velocities
       for (int i = 0; i < NUM_OUTPUT; i++)
@@ -338,17 +367,109 @@ void FSMState_RL::_Run_Forward()
       // calculate actions
       for (int j = 0; j < NUM_OUTPUT; j++)
       {
-        this->action[j] = this->output.get()[j] * this->params_.action_scale + this->params_.default_dof_pos[j];
-        // std::cout << "action" << j << " : " << this->action[j] << std::endl;
+        if(this->use_lpf_actions == true)
+        {
+          this->action[j] = (0.8*this->output.get()[j] + 0.2*this->action_last[j]) * this->params_.action_scale;
+        }
+        else
+        {
+          this->action[j] = this->output.get()[j] * this->params_.action_scale;
+        }
+        
+        this->action_last[j] = this->output.get()[j];
       }
 
       for (int i = 0; i < NUM_OUTPUT; i++)
       {
-        this->desired_pos[i] = this->action[i];
+        this->desired_pos[i] = this->action[i] + this->params_.default_dof_pos[i];
       }
     }
 
     absoluteWait(_start_time, (long long)(0.01 * 1000000));
   }
-  this->threadRunning = false;
+  this->threadRunning[0] = false;
+}
+
+void FSMState_RL::_Run_Lowlevel()
+{
+  while (this->threadRunning[1])
+  {
+    long long _start_time = getSystemTime();
+
+    if (!this->stop_update_[1])
+    {
+      this->dof_actuate[this->dofs_.dof_mode]();
+    }
+    absoluteWait(_start_time, (long long)(0.0025 * 1000000));
+  }
+  this->threadRunning[1] = false;
+}
+
+void FSMState_RL::_P_actuate()
+{
+  for (int i = 0; i < NUM_OUTPUT; i++)
+  {
+    if (i == 0)
+    {
+      this->torques[i] = this->dofs_.P_p[i] * (this->desired_pos[i] - this->_data->low_state->q[i]) + this->dofs_.P_d[i] * (0 - this->_data->low_state->dq[i]);
+    }
+    else
+    {
+      if (NUM_OUTPUT == 2)
+      {
+        this->torques[2] = this->dofs_.P_p[i] * this->desired_pos[i] + this->dofs_.P_d[i] * (0 - this->_data->low_state->dq[i]);
+        this->torques[1] = 0;
+      }
+      else
+      {
+        this->torques[i] = this->dofs_.P_p[i] * this->desired_pos[i] + this->dofs_.P_d[i] * (0 - this->_data->low_state->dq[i]);
+      }
+    }
+  }
+}
+
+void FSMState_RL::_V_actuate()
+{
+  for (int i = 0; i < NUM_OUTPUT; i++)
+  {
+    if (i == 0)
+    {
+      this->torques[i] = this->dofs_.V_p[i] * (this->action[i] - this->obs_.dof_vel[i]) - this->dofs_.V_d[i] * (this->obs_.dof_vel[i] - this->obs_.dof_vel_last[i]) / 0.01;
+    }
+    else
+    {
+      if (NUM_OUTPUT == 2)
+      {
+        this->torques[2] = this->dofs_.V_p[i] * (this->action[i] - this->obs_.dof_vel[i]) - this->dofs_.V_d[i] * (this->obs_.dof_vel[i] - this->obs_.dof_vel_last[i]) / 0.01;
+        this->torques[1] = 0;
+      }
+      else
+      {
+        this->torques[i] = this->dofs_.V_p[i] * (this->action[i] - this->obs_.dof_vel[i]) - this->dofs_.V_d[i] * (this->obs_.dof_vel[i] - this->obs_.dof_vel_last[i]) / 0.01;
+      }
+    }
+  }
+}
+
+void FSMState_RL::_T_actuate()
+{
+  for (int i = 0; i < NUM_OUTPUT; i++)
+  {
+    if (i == 0)
+    {
+      this->torques[i] = this->action[i] - this->dofs_.T_d[i] * this->obs_.dof_vel[i];
+    }
+    else
+    {
+      if (NUM_OUTPUT == 2)
+      {
+        this->torques[2] = this->action[i] - this->dofs_.V_d[i] * this->obs_.dof_vel[i];
+        this->torques[1] = 0;
+      }
+      else
+      {
+        this->torques[i] = this->action[i] - this->dofs_.V_d[i] * this->obs_.dof_vel[i];
+      }
+    }
+  }
 }

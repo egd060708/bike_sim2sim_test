@@ -164,18 +164,23 @@ FSMState_TraditionCtrl::FSMState_TraditionCtrl(std::shared_ptr<ControlFSMData> d
   this->bike_state.wheel_radius = 0.33;
 
   // control mode
-  this->ctrl_mode = 0;
+  this->ctrl_mode = LQR;
 
 }
 
 void FSMState_TraditionCtrl::enter()
 {
-  if(this->ctrl_mode == 0)
+  if(this->ctrl_mode == TEST)
+  {
+    // set test params
+    this->_test_params_update();
+  }
+  else if(this->ctrl_mode == PID)
   {
     // set pid params
     this->_pid_params_update();
   }
-  else
+  else if(this->ctrl_mode == LQR)
   {
     // set lqr params
     this->_lqr_params_update();
@@ -201,19 +206,6 @@ void FSMState_TraditionCtrl::run()
   this->_data->low_cmd->kd.setZero();
   this->_data->low_cmd->tau_cmd.setZero();
 
-  // if(this->ctrl_mode == 0)
-  // {
-  //   // set pid params
-  //   this->_pid_params_update();
-  // }
-  // else
-  // {
-  //   // set lqr params
-  //   this->_lqr_params_update();
-  // }
-  // // update body state
-  // this->_bike_state_update();
-
   // update commands
   this->bike_state.ref_v = this->_data->state_command->rc_data_->twist_linear[point::X];
   this->bike_state.ref_yaw = this->_data->state_command->rc_data_->twist_angular[point::Z];
@@ -221,21 +213,6 @@ void FSMState_TraditionCtrl::run()
   this->bike_state.ref_roll = 0.5 * this->_data->state_command->rc_data_->twist_angular[point::Z];
   this->bike_state.ref_rollVel = 0.;
   this->bike_state.ref_turn = 0.;
-
-  // if(this->ctrl_mode == 0)
-  // {
-  //   // use pid controller
-  //   this->_high_level_pid_cal();
-  //   this->_low_level_pid_cal();
-  //   this->_pid_actuate();
-  // }
-  // else
-  // {
-  //   // use pid controller
-  //   this->_high_level_lqr_cal();
-  //   this->_low_level_lqr_cal();
-  //   this->_lqr_actuate();
-  // }
 
   for (int i = 0; i < 3; i++)
   {
@@ -256,12 +233,17 @@ void FSMState_TraditionCtrl::_controller_loop()
 
     if(!this->stop_update_)
     {
-      if(this->ctrl_mode == 0)
+      if(this->ctrl_mode == TEST)
+      {
+        // set test params
+        this->_test_params_update();
+      }
+      else if(this->ctrl_mode == PID)
       {
         // set pid params
         this->_pid_params_update();
       }
-      else
+      else if(this->ctrl_mode == LQR)
       {
         // set lqr params
         this->_lqr_params_update();
@@ -269,22 +251,20 @@ void FSMState_TraditionCtrl::_controller_loop()
       // update body state
       this->_bike_state_update();
 
-      // // update commands
-      // this->bike_state.ref_v = this->_data->state_command->rc_data_->twist_linear[point::X];
-      // this->bike_state.ref_yaw = this->_data->state_command->rc_data_->twist_angular[point::Z];
-      // this->bike_state.ref_yawVel = this->_data->state_command->rc_data_->twist_angular[point::Z];
-      // this->bike_state.ref_roll = 0.5 * this->_data->state_command->rc_data_->twist_angular[point::Z];
-      // this->bike_state.ref_rollVel = 0.;
-      // this->bike_state.ref_turn = 0.;
-
-      if(this->ctrl_mode == 0)
+      if(this->ctrl_mode == TEST)
+      {
+        // use test controller
+        this->_test_cal();
+        this->_test_actuate();
+      }
+      else if(this->ctrl_mode == PID)
       {
         // use pid controller
         this->_high_level_pid_cal();
         this->_low_level_pid_cal();
         this->_pid_actuate();
       }
-      else
+      else if(this->ctrl_mode == LQR)
       {
         // use pid controller
         this->_high_level_lqr_cal();
@@ -292,7 +272,11 @@ void FSMState_TraditionCtrl::_controller_loop()
         this->_lqr_actuate();
       }
     }
-    absoluteWait(_start_time, (long long)(0.002 * 1000000));
+    // for (int i = 0; i < 3; i++)
+    // {
+    //   this->_data->low_cmd->tau_cmd[i] = this->bike_state.ctrl_output[i];
+    // }
+    absoluteWait(_start_time, (long long)(0.01 * 1000000));
   }
   this->threadRunning = false;
 }
@@ -550,6 +534,52 @@ void FSMState_TraditionCtrl::_low_level_lqr_cal()
 }
 
 void FSMState_TraditionCtrl::_lqr_actuate()
+{
+  // motor ref -> motor torque
+  for (int i = 0; i < 3; i++)
+  {
+    if (this->bike_pid_params.motor_enList[i] == true)
+    {
+      this->bike_state.ctrl_output[i] = this->bike_motor_pid[i].out;
+    }
+    else
+    {
+      this->bike_state.ctrl_output[i] = 0;
+    }
+  }
+}
+
+void FSMState_TraditionCtrl::_test_params_update()
+{
+  // // pid ctrl
+  // this->bike_motor_pid[0].Params_Config(20,0,-2.,0.,20.);
+  // this->bike_motor_pid[1].Params_Config(15,30,-0.2,10.,30.);
+  // this->bike_motor_pid[2].Params_Config(15,30,-0.2,10.,30.);
+
+  // // lqr ctrl
+  // this->bike_motor_pid[0].Params_Config(20,0,-2.,0.,20.);
+  // this->bike_motor_pid[1].Params_Config(15,30,-0.2,10.,30.);
+  // this->bike_motor_pid[2].Params_Config(15,30,-0.2,10.,30.);
+
+  // test ctrl
+  this->bike_motor_pid[0].Params_Config(5,0.,-0.01,0.,20.);
+  this->bike_motor_pid[1].Params_Config(10,10,-0.2,10.,30.);
+  this->bike_motor_pid[2].Params_Config(10,0.,-0.015,0.,30.);
+  this->bike_motor_pid[0].d_of_current = true;
+  this->bike_motor_pid[2].d_of_current = true;
+}
+
+void FSMState_TraditionCtrl::_test_cal()
+{
+  this->bike_motor_pid[0].target = this->bike_state.ref_yaw*5;
+  this->bike_motor_pid[2].target = this->bike_state.ref_v*10;
+  this->bike_motor_pid[0].current = this->bike_state.dof_vel[0];
+  this->bike_motor_pid[2].current = this->bike_state.dof_vel[2];
+  this->bike_motor_pid[0].Adjust(0);
+  this->bike_motor_pid[2].Adjust(0);
+}
+
+void FSMState_TraditionCtrl::_test_actuate()
 {
   // motor ref -> motor torque
   for (int i = 0; i < 3; i++)

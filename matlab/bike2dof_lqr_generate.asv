@@ -6,9 +6,9 @@ v_bottom=0.5;
 v_step=0.01;
 Ts = 0.002;
 
-lqr_Q = [300 0 0; ...
+lqr_Q = [10000 0 0; ...
          0 0 0; ...
-         0 0 300];
+         0 0 00];
 lqr_R = 1;
 
 %取出拟合lqr参数
@@ -30,7 +30,20 @@ for j=1:1:uNum
         ylabel('k');
         grid on;
         hold on;
-        
-        bike2dof_lqr_fit_feedback(V_s,Kp{j,k},"/*参数*/",strcat("leg_lqr_params[",num2str(j-1),"][",num2str(k-1),"]"));
+        coefficients = polyfit(V_s, Kp{j,k}, 7);
+        fittedY = polyval(coefficients, V_s);
+        plot(V_s, fittedY, 'r-', 'LineWidth', 2);
+%         disp(coefficients)
+%         % 定义对数函数模型：y = a + b*ln(x)
+%         modelFun = @(b, x) b(1) + b(2)*log(x);  
+%         initialParams = [1, 1];  % 初始参数猜测
+%         
+%         % 使用fitnlm函数拟合
+%         nonlinModel = fitnlm(V_s, Kp{j,k}, modelFun, initialParams);
+%         disp(nonlinModel.Coefficients);  % 显示参数估计值和统计量
+%         
+%         % 绘制拟合结果
+%         plot(nonlinModel);
+        bike2dof_lqr_fit_feedback(V_s,Kp{j,k},"/*参数*/",strcat("this->bike_lqr_params.lqrs[",num2str(k-1),"]"));
     end
 end
