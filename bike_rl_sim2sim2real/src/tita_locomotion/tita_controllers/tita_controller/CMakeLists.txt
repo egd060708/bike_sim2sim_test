@@ -42,6 +42,7 @@ set(PLANNER_FILES
 
 set(TENSORRT_CUDA_FILES
   src/tensorrt_cuda/tensor_cuda_test.cpp
+  src/tensorrt_cuda/rl_inference_module.cpp
 )
 
 set(MY_CONTROLLER_FILES

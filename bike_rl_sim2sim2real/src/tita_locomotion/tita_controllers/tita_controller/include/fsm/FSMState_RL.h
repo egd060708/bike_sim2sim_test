@@ -6,6 +6,7 @@
 #include "FSMState.h"
 #include "tensorrt_cuda/tensor_cuda_test.hpp"
 #include "../my_controller_module/Pid/Cpp/include/PIDmethod.h"
+#include "tensorrt_cuda/rl_inference_module.hpp"
 
 #define NUM_OBS 22
 #define OBS_BUF 10
@@ -106,25 +107,16 @@ private:
   void _V_actuate();
   void _T_actuate();
 
-  void _Forward(bool _is_init);
   void _Run_Forward();
   void _Run_Lowlevel();
 
-  std::shared_ptr<CudaTest> cuda_test_;
+  std::shared_ptr<RL_InferenceModule> inference_test_;
 
   std::thread ctrl_thread[2];
   bool threadRunning[2] = {false,false};
   float desired_pos[NUM_OUTPUT] = {0.};
-  
-  std::shared_ptr<float[]> input_0;
-  std::shared_ptr<float[]> input_1;
-  std::shared_ptr<float[]> output;
 
-  std::shared_ptr<float[]> output_last;
-  std::shared_ptr<float[]> input_1_temp;
-
-  void _GetObs(bool _is_init);
-  Vec3<double> a_l;
+  const std::vector<float> _GetObs();
 
   float action[NUM_OUTPUT];
   float action_last[NUM_OUTPUT];

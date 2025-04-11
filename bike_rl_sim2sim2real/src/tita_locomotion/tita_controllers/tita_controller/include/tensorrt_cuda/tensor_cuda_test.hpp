@@ -1,3 +1,4 @@
+#pragma once
 #include <NvInfer.h>
 #include <cuda_runtime_api.h>
 
