@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="bikeR">
+  <link
+    name="base_link">
+  <inertial>
+  <origin
+    xyz="0.14157255 0.0 -0.06833042"
+    rpy="0 0 0" />
+  <mass
+    value="5.8629187" />
+  <inertia
+    ixx="0.09498332"
+    ixy="-3e-08"
+    ixz="0.00185079"
+    iyy="0.18358956"
+    iyz="1e-08"
+    izz="0.097214" />
+</inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/usr/share/robot_description/bikeR/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.69804 0.69804 0.69804 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/usr/share/robot_description/bikeR/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="imu_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu_link"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+  </joint>
+  <link name="imu_link">
+    <inertial>
+      <mass value="0.001"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <box size="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="red"/>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <box size=".001 .001 .001"/>
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="front_turn">
+    <inertial>
+  <origin
+    xyz="0 0 -0.09035699"
+    rpy="0 0 0" />
+  <mass
+    value="0.51774673" />
+  <inertia
+    ixx="0.00872423"
+    ixy="0.0"
+    ixz="0.0"
+    iyy="0.00809841"
+    iyz="0.0"
+    izz="0.00067395" />
+</inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/usr/share/robot_description/bikeR/meshes/front_turn.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.69804 0.69804 0.69804 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/usr/share/robot_description/bikeR/meshes/front_turn.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_front_turn"
+    type="revolute">
+    <origin
+      xyz="0.36825 0 -0.0031221"
+      rpy="0 -0.31416 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="front_turn" />
+    <axis
+      xyz="0 0 -1" />
+    <limit effort="20" lower="-1.6" upper="1.6" velocity="12.5"/>
+  </joint>
+  <link
+    name="front_wheel">
+   <inertial>
+  <origin
+    xyz="3.98e-06 1.311e-05 0.00054042"
+    rpy="0 0 0" />
+  <mass
+    value="3.5889276" />
+  <inertia
+    ixx="0.03120089"
+    ixy="-3.7e-07"
+    ixz="3.8e-07"
+    iyy="0.03119983"
+    iyz="5.3e-07"
+    izz="0.06130831" />
+</inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/usr/share/robot_description/bikeR/meshes/front_wheel.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.69804 0.69804 0.69804 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/usr/share/robot_description/bikeR/meshes/front_wheel.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_f_wheel"
+    type="revolute">
+    <origin
+      xyz="0 0 -0.32635"
+      rpy="1.5708 0.31416 0" />
+    <parent
+      link="front_turn" />
+    <child
+      link="front_wheel" />
+    <axis
+      xyz="0 0 -1" />
+    <limit effort="30" lower="-1000000" upper="1000000" velocity="200"/>
+  </joint>
+  <link
+    name="rear_wheel">
+    <inertial>
+  <origin
+    xyz="-9.81e-06 9.57e-06 0.00054042"
+    rpy="0 0 0" />
+  <mass
+    value="3.5889276" />
+  <inertia
+    ixx="0.03120036"
+    ixy="6.5e-07"
+    ixz="-3e-07"
+    iyy="0.03120036"
+    iyz="5.9e-07"
+    izz="0.06130831" />
+</inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/usr/share/robot_description/bikeR/meshes/rear_wheel.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.69804 0.69804 0.69804 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/usr/share/robot_description/bikeR/meshes/rear_wheel.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_rear_wheel"
+    type="revolute">
+    <origin
+      xyz="-0.1709 0 -0.3135"
+      rpy="1.5708 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="rear_wheel" />
+    <axis
+      xyz="0 0 -1" />
+    <limit effort="30" lower="-1000000" upper="1000000" velocity="200"/>
+  </joint>
+</robot>

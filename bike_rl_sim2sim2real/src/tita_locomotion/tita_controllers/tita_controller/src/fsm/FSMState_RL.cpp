@@ -17,7 +17,7 @@ FSMState_RL::FSMState_RL(std::shared_ptr<ControlFSMData> data)
   this->model_name = data->params->model_engine_path;
 
   this->inference_test_ = std::make_shared<RL_InferenceModule>(NUM_OBS, OBS_BUF, NUM_OUTPUT,
-                                                               "/home/lu/Git_Project/gitlab/bike_rl/engine/head_25model_16000_T.engine");
+                                                               "/home/lu/Git_Project/gitlab/bike_rl/engine/head_10model_12000.engine");
   // 使用lambda表达式传入函数指针
   this->inference_test_->set_obs_func([this]() -> const std::vector<float> { return this->_GetObs(); });
 
@@ -43,7 +43,7 @@ FSMState_RL::FSMState_RL(std::shared_ptr<ControlFSMData> data)
   this->dof_actuate[2] = [this]()
   { this->_T_actuate(); };
   // 配置关节执行模式
-  this->dofs_.dof_mode = DofCtrlType::T;
+  this->dofs_.dof_mode = DofCtrlType::P;
 }
 
 void FSMState_RL::enter()
@@ -60,7 +60,7 @@ void FSMState_RL::enter()
     this->obs_.dof_vel[i] = this->_data->low_state->dq[i];
   }
 
-  this->params_.action_scale = 1.;
+  this->params_.action_scale = 0.25;
   this->params_.num_of_dofs = 3;
   this->params_.lin_vel_scale = 2.0;
   this->params_.ang_vel_scale = 0.25;
@@ -73,6 +73,8 @@ void FSMState_RL::enter()
 
   this->dofs_.P_p[0] = 20;
   this->dofs_.P_d[0] = 2.;
+  // this->dofs_.P_p[0] = 40;
+  // this->dofs_.P_d[0] = 5.;
   this->dofs_.P_p[1] = 10;
   this->dofs_.P_d[1] = 1.;
   if (NUM_OUTPUT == 3)

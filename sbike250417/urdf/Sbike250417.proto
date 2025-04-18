@@ -1,0 +1,178 @@
+#VRML_SIM R2025a utf8
+# license: Apache License 2.0
+# license url: http://www.apache.org/licenses/LICENSE-2.0
+# This is a proto file for Webots for the Sbike250417
+# Extracted from: /home/lu/Git_Project/github/bike_sim2sim_test/sbike250417/urdf/sbike250417.urdf
+
+PROTO Sbike250417 [
+  field  SFVec3f     translation     0 0 0
+  field  SFRotation  rotation        0 0 1 0
+  field  SFString    name            "Sbike250417"  # Is `Robot.name`.
+  field  SFString    controller      "void"         # Is `Robot.controller`.
+  field  MFString    controllerArgs  []             # Is `Robot.controllerArgs`.
+  field  SFString    customData      ""             # Is `Robot.customData`.
+  field  SFBool      supervisor      FALSE          # Is `Robot.supervisor`.
+  field  SFBool      synchronization TRUE           # Is `Robot.synchronization`.
+  field  SFBool      selfCollision   FALSE          # Is `Robot.selfCollision`.
+]
+{
+  Robot {
+    translation IS translation
+    rotation IS rotation
+    controller IS controller
+    controllerArgs IS controllerArgs
+    customData IS customData
+    supervisor IS supervisor
+    synchronization IS synchronization
+    selfCollision IS selfCollision
+    children [
+      Shape {
+        appearance DEF base_link_material PBRAppearance {
+          baseColor 0.698040 0.698040 0.698040
+          roughness 1.000000
+          metalness 0
+        }
+        geometry DEF base_link Mesh {
+          url "/home/lu/Git_Project/github/bike_sim2sim_test/sbike250417/meshes/base_link.STL"
+        }
+      }
+      HingeJoint {
+        jointParameters HingeJointParameters {
+          axis 0.309018 0.000000 -0.951056
+          anchor 0.368250 0.000000 -0.003122
+        }
+        device [
+          RotationalMotor {
+            name "front_turn_joint"
+            maxTorque 10000
+          }
+          PositionSensor {
+            name "front_turn_joint_sensor"
+          }
+        ]
+        endPoint Solid {
+          translation 0.368250 0.000000 -0.003122
+          rotation 0.000000 -1.000000 0.000000 0.314160
+          children [
+            Shape {
+              appearance DEF front_turn_material PBRAppearance {
+                baseColor 0.698040 0.698040 0.698040
+                roughness 1.000000
+                metalness 0
+              }
+              geometry DEF front_turn Mesh {
+                url "/home/lu/Git_Project/github/bike_sim2sim_test/sbike250417/meshes/front_turn.STL"
+              }
+            }
+            HingeJoint {
+              jointParameters HingeJointParameters {
+                axis 0.000001 1.000000 0.000003
+                anchor 0.000000 0.000000 -0.326350
+              }
+              device [
+                RotationalMotor {
+                  name "front_wheel_joint"
+                  maxTorque 10000
+                }
+                PositionSensor {
+                  name "front_wheel_joint_sensor"
+                }
+              ]
+              endPoint Solid {
+                translation 0.000000 0.000000 -0.326350
+                rotation 0.975820 0.154555 -0.154555 1.595274
+                children [
+                  Shape {
+                    appearance DEF front_wheel_material PBRAppearance {
+                      baseColor 0.698040 0.698040 0.698040
+                      roughness 1.000000
+                      metalness 0
+                    }
+                    geometry DEF front_wheel Mesh {
+                      url "/home/lu/Git_Project/github/bike_sim2sim_test/sbike250417/meshes/front_wheel.STL"
+                    }
+                  }
+                ]
+                name "front_wheel"
+                boundingObject USE front_wheel
+                physics Physics {
+                  density -1
+                  mass 3.588928
+                  centerOfMass [ 0.000004 0.000013 0.000540 ]
+                  inertiaMatrix [
+                    3.120089e-02 3.119983e-02 6.130831e-02
+                    -3.700000e-07 3.800000e-07 5.300000e-07
+                  ]
+                }
+              }
+            }
+          ]
+          name "front_turn"
+          boundingObject USE front_turn
+          physics Physics {
+            density -1
+            mass 0.517747
+            centerOfMass [ 0.000000 0.000000 -0.090357 ]
+            inertiaMatrix [
+              8.724230e-03 8.098410e-03 6.739500e-04
+              0.000000e+00 0.000000e+00 0.000000e+00
+            ]
+          }
+        }
+      }
+      HingeJoint {
+        jointParameters HingeJointParameters {
+          axis 0.000000 1.000000 0.000004
+          anchor -0.170900 0.000000 -0.313500
+        }
+        device [
+          RotationalMotor {
+            name "rear_wheel_joint"
+            maxTorque 10000
+          }
+          PositionSensor {
+            name "rear_wheel_joint_sensor"
+          }
+        ]
+        endPoint Solid {
+          translation -0.170900 0.000000 -0.313500
+          rotation 1.000000 0.000000 0.000000 1.570800
+          children [
+            Shape {
+              appearance DEF rear_wheel_material PBRAppearance {
+                baseColor 0.698040 0.698040 0.698040
+                roughness 1.000000
+                metalness 0
+              }
+              geometry DEF rear_wheel Mesh {
+                url "/home/lu/Git_Project/github/bike_sim2sim_test/sbike250417/meshes/rear_wheel.STL"
+              }
+            }
+          ]
+          name "rear_wheel"
+          boundingObject USE rear_wheel
+          physics Physics {
+            density -1
+            mass 3.588928
+            centerOfMass [ -0.000010 0.000010 0.000540 ]
+            inertiaMatrix [
+              3.120036e-02 3.120036e-02 6.130831e-02
+              6.500000e-07 -3.000000e-07 5.900000e-07
+            ]
+          }
+        }
+      }
+    ]
+    name IS name
+    boundingObject USE base_link
+    physics Physics {
+      density -1
+      mass 5.862919
+      centerOfMass [ 0.141573 0.000000 -0.068330 ]
+      inertiaMatrix [
+        9.498332e-02 1.835896e-01 9.721400e-02
+        -3.000000e-08 1.850790e-03 1.000000e-08
+      ]
+    }
+  }
+}

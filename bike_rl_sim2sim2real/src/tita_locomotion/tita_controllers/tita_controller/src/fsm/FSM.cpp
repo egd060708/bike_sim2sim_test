@@ -98,6 +98,6 @@ bool FSM::checkSafty()
   if (_currentState->_stateName == FSMStateName::BALANCE_STAND) {
     if (std::abs(_data->wheel_legged_data->com_position_relative(point::X)) > 0.15) isSafe = false;
   }
-  isSafe = true;
+  // isSafe = true;
   return isSafe;
 }

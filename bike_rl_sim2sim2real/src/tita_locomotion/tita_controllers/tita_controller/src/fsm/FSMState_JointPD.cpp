@@ -40,7 +40,7 @@ void FSMState_JointPD::enter()
 
 void FSMState_JointPD::run()
 {
-  std::cout << "passive running" << std::endl;
+  // std::cout << "passive running" << std::endl;
   _data->low_cmd->zero();
   Eigen::Map<DVec<scalar_t>> kp_joint(
     _data->params->joint_kp.data(), _data->params->joint_kp.size()),

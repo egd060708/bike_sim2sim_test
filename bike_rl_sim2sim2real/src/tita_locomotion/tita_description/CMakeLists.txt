@@ -17,7 +17,7 @@ elseif($ENV{ROS_VERSION} EQUAL 2)
 
   find_package(ament_cmake REQUIRED)
 
-  install(DIRECTORY launch bike tita tower rviz DESTINATION share/${PROJECT_NAME})
+  install(DIRECTORY launch bikeR bike tita tower rviz DESTINATION share/${PROJECT_NAME})
 
   ament_package()
 endif()

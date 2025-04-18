@@ -522,7 +522,7 @@ tita_controller:
   joint_pd:
     p: {
       type: double_array,
-      default_value: [40.0, 10.0, 10.0],
+      default_value: [20.0, 10.0, 10.0],
       description: "Max torque of every joint motor.",
       validation: {
         fixed_size<>: [3],
@@ -530,7 +530,7 @@ tita_controller:
     }
     d: {
       type: double_array,
-      default_value: [1.0, 0.5, 0.5],
+      default_value: [2.0, 1., 1.],
       description: "Max torque of every joint motor.",
       validation: {
         fixed_size<>: [3],

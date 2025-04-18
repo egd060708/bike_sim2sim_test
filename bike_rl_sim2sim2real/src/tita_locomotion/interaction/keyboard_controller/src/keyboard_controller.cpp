@@ -35,7 +35,7 @@ void KeyboardControllerNode::print_interface()
   std::cout << R"(
   -------------------------------------------------------
                     State Machines
-  0: passive 1: transform up 2 balance 3: transform down 4: rl
+  0: passive 1: joint pd 2 tradition ctrl 3: rl
   -------------------------------------------------------
   Moving Around    Postion Control    Orientation Control                                       
         w                 ↑                u i o                                               
@@ -97,15 +97,12 @@ void KeyboardControllerNode::ReadKeyThread()
         fsm_goal_.data = "idle";
         break;
       case '1':
-        fsm_goal_.data = "transform_up";
+        fsm_goal_.data = "joint_pd";
         break;
       case '2':
         fsm_goal_.data = "rl";
         break;
       case '3':
-        fsm_goal_.data = "transform_down";
-        break;
-      case '4':
         fsm_goal_.data = "traditional_ctrl";
         break;
       case 'w':

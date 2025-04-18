@@ -26,7 +26,7 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(os.path.join(
             get_package_share_directory('webots_bridge'),
             'launch',
-            'webots_bridge.launch.py'
+            'bikeR_webots_bridge.launch.py'
         )),
         launch_arguments={
             'urdf': "robot.xacro",
