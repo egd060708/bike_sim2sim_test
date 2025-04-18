@@ -46,7 +46,7 @@ void FSMState_JointPD::run()
   // Eigen::Map<DVec<scalar_t>> kp_joint(
   //   _data->params->joint_kp.data(), _data->params->joint_kp.size()),
   //   kd_joint(_data->params->joint_kd.data(), _data->params->joint_kd.size());
-  Vec3<scalar_t> kp_joint = Vec3<scalar_t>(15,10,10);
+  Vec3<scalar_t> kp_joint = Vec3<scalar_t>(14,10,10);
   Vec3<scalar_t> kd_joint = Vec3<scalar_t>(1,1,1);
   DVec<scalar_t> initial_djpos(initial_jpos.size());
   initial_djpos.setZero();
