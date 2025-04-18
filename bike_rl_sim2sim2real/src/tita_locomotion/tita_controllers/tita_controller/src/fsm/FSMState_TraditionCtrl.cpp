@@ -521,7 +521,7 @@ void FSMState_TraditionCtrl::_low_level_pid_cal()
   this->bike_balance_pid.target = this->bike_state.ref_roll;
   this->bike_balance_pid.current = this->bike_state.obs_roll;
   this->bike_balance_pid.Adjust(0, this->bike_state.obs_rollVel);
-  double real_v = this->bike_state.dof_vel[2]*0.33*0.7;
+  double real_v = this->real_v_mf.f(this->bike_state.dof_vel[2]*0.33*0.7);
   // avoid approach 0
   if(real_v<0.5)
   {
@@ -619,7 +619,7 @@ void FSMState_TraditionCtrl::_high_level_lqr_cal()
 void FSMState_TraditionCtrl::_low_level_lqr_cal()
 {
   // task1: roll error, rollVel error, turn error -> turnVel ref
-  double real_v = this->bike_state.dof_vel[2]*0.33;
+  double real_v = this->real_v_mf.f(this->bike_state.dof_vel[2]*0.33);
   // avoid approach 0
   if(real_v<0.5)
   {

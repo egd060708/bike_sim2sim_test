@@ -4,6 +4,7 @@
 #include <thread>
 #include "FSMState.h"
 #include "../my_controller_module/Pid/Cpp/include/PIDmethod.h"
+#include "../my_filter_module/Cpp/include/my_filters.h"
 
 typedef enum _CtrlMode
 {
@@ -123,6 +124,9 @@ private:
   void _high_level_lqr_cal();
   void _low_level_lqr_cal();
   void _lqr_actuate();
+
+  // filters
+  MeanFilter<10> real_v_mf;
 
 
   CtrlMode ctrl_mode = CtrlMode::TEST;

@@ -14,6 +14,7 @@ include_directories()
 include_directories(/usr/local/cuda/include)
 link_directories(/usr/local/cuda/lib64)
 include_directories(my_controller_module/Pid/Cpp/include)
+include_directories(my_filter_module/Cpp/include)
 
 # generate parameter listener hpp file
 generate_parameter_library(tita_controller_parameters
@@ -47,6 +48,10 @@ set(TENSORRT_CUDA_FILES
 
 set(MY_CONTROLLER_FILES
   my_controller_module/Pid/Cpp/source/PIDmethod.cpp
+)
+
+set(MY_FILTER_FILES
+  my_filter_module/Cpp/source/my_filters.cpp
 )
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
