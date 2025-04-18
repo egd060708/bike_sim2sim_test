@@ -32,6 +32,7 @@ void FSMState_JointPD::enter()
   // Default is to not transition
   this->_nextStateName = this->_stateName;
   initial_jpos = this->_data->low_state->q;
+  initial_jpos(0) = 0.;
 }
 
 /**
@@ -40,16 +41,19 @@ void FSMState_JointPD::enter()
 
 void FSMState_JointPD::run()
 {
-  // std::cout << "passive running" << std::endl;
+  std::cout << "passive running" << std::endl;
   _data->low_cmd->zero();
-  Eigen::Map<DVec<scalar_t>> kp_joint(
-    _data->params->joint_kp.data(), _data->params->joint_kp.size()),
-    kd_joint(_data->params->joint_kd.data(), _data->params->joint_kd.size());
-
+  // Eigen::Map<DVec<scalar_t>> kp_joint(
+  //   _data->params->joint_kp.data(), _data->params->joint_kp.size()),
+  //   kd_joint(_data->params->joint_kd.data(), _data->params->joint_kd.size());
+  Vec3<scalar_t> kp_joint = Vec3<scalar_t>(15,10,10);
+  Vec3<scalar_t> kd_joint = Vec3<scalar_t>(1,1,1);
   DVec<scalar_t> initial_djpos(initial_jpos.size());
   initial_djpos.setZero();
   _data->low_cmd->tau_cmd = kp_joint.cwiseProduct(initial_jpos - _data->low_state->q) +
                             kd_joint.cwiseProduct(initial_djpos - _data->low_state->dq);
+  // std::cout << "kp: " << kp_joint << std::endl;
+  // std::cout << "kd: " << kd_joint << std::endl;
   for (Eigen::Index i(0); i < initial_jpos.size(); ++i) {
     bound(_data->low_cmd->tau_cmd(i), _data->params->torque_limit[i]);
   }

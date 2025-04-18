@@ -1,5 +1,5 @@
 %lqr线性化函数(返回参数：lqr参数，对应车辆速度，参数组数）
-function [K_,V_,C_]=bike2dof_lqr_model1(Ts,top,bottom,step,lqr_Q,lqr_R)
+function [K_,V_,C_]=bike2dof_lqr_model1(Ts,top,bottom,step,lqr_Q,lqr_R,robot_type)
 count=0;
 for n=bottom:step:top
     count=count+1;
@@ -13,10 +13,17 @@ C_=count;
 xNum = size(lqr_Q,1);%获取行数，也就是状态变量个数
 uNum = size(lqr_R,2);%获取列数，也就是输入变量个数
 
-g = 9.8;
-h = 0.4631022;
-w = 1.02065;
-b = 0.4651025;
+if robot_type == 0
+    g = 9.8;
+    h = 0.4631022;
+    w = 1.02065;
+    b = 0.4651025;
+else
+    g = 9.8;
+    h = 0.11459196+0.175;
+    w = 0.64;
+    b = 0.32617799;
+end
 % 重力加速度
 % 自行车质心的高度
 % 自行车的行驶速度

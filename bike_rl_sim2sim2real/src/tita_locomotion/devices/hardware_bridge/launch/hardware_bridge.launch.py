@@ -66,7 +66,7 @@ def generate_launch_description():
     # Initialize Arguments
     # save urdf
     robot_description_content_dir = PathJoinSubstitution(
-        [FindPackageShare("tita_description"), "tita" , "xacro",  LaunchConfiguration('urdf')]
+        [FindPackageShare("tita_description"), "bikeR" , "xacro",  LaunchConfiguration('urdf')]
     )
     xacro_executable = FindExecutable(name="xacro")
 

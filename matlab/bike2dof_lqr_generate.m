@@ -11,8 +11,10 @@ lqr_Q = [10000 0 0; ...
          0 0 200];
 lqr_R = 1;
 
+robot_type = 1;
+
 %取出拟合lqr参数
-[K_s,V_s,C_s] = bike2dof_lqr_model1 (Ts,v_top,v_bottom,v_step,lqr_Q,lqr_R);
+[K_s,V_s,C_s] = bike2dof_lqr_model1 (Ts,v_top,v_bottom,v_step,lqr_Q,lqr_R,robot_type);
 
 xNum = size(lqr_Q,1);%获取行数，也就是状态变量个数
 uNum = size(lqr_R,2);%获取列数，也就是输入变量个数

@@ -37,6 +37,8 @@ FSMState_TraditionCtrl::FSMState_TraditionCtrl(std::shared_ptr<ControlFSMData> d
   }
   this->bike_heading_pid[1].d_of_current = false;
 
+#if USE_REAL_BIKE == 0
+
   // pid params
   this->bike_pid_params.balance_kp = -20.;
   this->bike_pid_params.balance_ki = 0.;
@@ -162,6 +164,121 @@ FSMState_TraditionCtrl::FSMState_TraditionCtrl(std::shared_ptr<ControlFSMData> d
   this->bike_state.com_weight = 12.04277;
   this->bike_state.wheel_dist = 1.02065;
   this->bike_state.wheel_radius = 0.33;
+
+#else
+  // pid params
+  this->bike_pid_params.balance_kp = -20.;
+  this->bike_pid_params.balance_ki = 0.;
+  this->bike_pid_params.balance_kd = 0.5;
+  this->bike_pid_params.balance_imax = 0.5;
+  this->bike_pid_params.balance_lim = 2.;
+
+  this->bike_pid_params.heading_kp[0] = 0.5;
+  this->bike_pid_params.heading_ki[0] = 0.;
+  this->bike_pid_params.heading_kd[0] = -0.;
+  this->bike_pid_params.heading_imax[0] = 0.;
+  this->bike_pid_params.heading_lim[0] = 1.;
+
+  this->bike_pid_params.heading_kp[1] = 0.;
+  this->bike_pid_params.heading_ki[1] = -0.2;
+  this->bike_pid_params.heading_kd[1] = 0.;
+  this->bike_pid_params.heading_imax[1] = 0.15;
+  this->bike_pid_params.heading_lim[1] = 0.15;
+
+  // low gain
+  this->bike_pid_params.motor_kp[0] = 20.;
+  this->bike_pid_params.motor_ki[0] = 0.;
+  this->bike_pid_params.motor_kd[0] = -2.;
+  this->bike_pid_params.motor_imax[0] = 0.;
+  this->bike_pid_params.motor_lim[0] = 20.;
+
+  this->bike_pid_params.motor_kp[1] = 20.;
+  this->bike_pid_params.motor_ki[1] = 0.;
+  this->bike_pid_params.motor_kd[1] = 0.;
+  this->bike_pid_params.motor_imax[1] = 0.;
+  this->bike_pid_params.motor_lim[1] = 30.;
+
+  this->bike_pid_params.motor_kp[2] = 15.;
+  this->bike_pid_params.motor_ki[2] = 30.;
+  this->bike_pid_params.motor_kd[2] = -0.2;
+  this->bike_pid_params.motor_imax[2] = 10.;
+  this->bike_pid_params.motor_lim[2] = 30.;
+
+
+  // lqr controller pid init
+  for(int i=0;i<3;i++)
+  {
+    this->bike_lqr_pid[i].PID_Init(Fit, 0);
+    this->bike_lqr_pid[i].getMicroTick_regist(getSystemTime);
+    this->bike_lqr_pid[i].fit_degree = 7;
+  }
+
+  // lqr params init
+  this->bike_lqr_params.heading_kp[0] = 0.5;
+  this->bike_lqr_params.heading_ki[0] = 0.;
+  this->bike_lqr_params.heading_kd[0] = -0.;
+  this->bike_lqr_params.heading_imax[0] = 0.;
+  this->bike_lqr_params.heading_lim[0] = 1.;
+
+  this->bike_lqr_params.heading_kp[1] = 0.;
+  this->bike_lqr_params.heading_ki[1] = -0.2;
+  this->bike_lqr_params.heading_kd[1] = 0.;
+  this->bike_lqr_params.heading_imax[1] = 0.2;
+  this->bike_lqr_params.heading_lim[1] = 0.2;
+
+  this->bike_lqr_params.motor_kp[0] = 15.;
+  this->bike_lqr_params.motor_ki[0] = 60.;
+  this->bike_lqr_params.motor_kd[0] = -0.3;
+  this->bike_lqr_params.motor_imax[0] = 5.;
+  this->bike_lqr_params.motor_lim[0] = 20.;
+
+  this->bike_lqr_params.motor_kp[1] = 20.;
+  this->bike_lqr_params.motor_ki[1] = 0.;
+  this->bike_lqr_params.motor_kd[1] = 0.;
+  this->bike_lqr_params.motor_imax[1] = 0.;
+  this->bike_lqr_params.motor_lim[1] = 30.;
+
+  this->bike_lqr_params.motor_kp[2] = 10.;
+  this->bike_lqr_params.motor_ki[2] = 10.;
+  this->bike_lqr_params.motor_kd[2] = -0.2;
+  this->bike_lqr_params.motor_imax[2] = 10.;
+  this->bike_lqr_params.motor_lim[2] = 30.;
+
+  /*参数*/
+  this->bike_lqr_params.lqrs[0].a = -3.513199e-01;
+  this->bike_lqr_params.lqrs[0].b = 7.492402e+00;
+  this->bike_lqr_params.lqrs[0].c = -6.638274e+01;
+  this->bike_lqr_params.lqrs[0].d = 3.161881e+02;
+  this->bike_lqr_params.lqrs[0].e = -8.742679e+02;
+  this->bike_lqr_params.lqrs[0].f = 1.408741e+03;
+  this->bike_lqr_params.lqrs[0].g = -1.243565e+03;
+  this->bike_lqr_params.lqrs[0].h = 5.849328e+02;
+  /*参数*/
+  this->bike_lqr_params.lqrs[1].a = -5.781264e-02;
+  this->bike_lqr_params.lqrs[1].b = 1.239069e+00;
+  this->bike_lqr_params.lqrs[1].c = -1.105273e+01;
+  this->bike_lqr_params.lqrs[1].d = 5.315413e+01;
+  this->bike_lqr_params.lqrs[1].e = -1.491052e+02;
+  this->bike_lqr_params.lqrs[1].f = 2.459232e+02;
+  this->bike_lqr_params.lqrs[1].g = -2.266428e+02;
+  this->bike_lqr_params.lqrs[1].h = 1.023072e+02;
+  /*参数*/
+  this->bike_lqr_params.lqrs[2].a = -1.498419e-03;
+  this->bike_lqr_params.lqrs[2].b = 2.121137e-02;
+  this->bike_lqr_params.lqrs[2].c = -6.030981e-02;
+  this->bike_lqr_params.lqrs[2].d = -5.555479e-01;
+  this->bike_lqr_params.lqrs[2].e = 4.898963e+00;
+  this->bike_lqr_params.lqrs[2].f = -1.611647e+01;
+  this->bike_lqr_params.lqrs[2].g = 2.855779e+01;
+  this->bike_lqr_params.lqrs[2].h = -1.601680e+01;
+
+  // bike discription
+  this->bike_state.com_dist = 0.32617799;
+  this->bike_state.com_height = 0.11459196+0.175;
+  this->bike_state.com_weight = 13.55852069;
+  this->bike_state.wheel_dist = 0.64;
+  this->bike_state.wheel_radius = 0.175;
+#endif
 
   // control mode
   this->ctrl_mode = LQR;

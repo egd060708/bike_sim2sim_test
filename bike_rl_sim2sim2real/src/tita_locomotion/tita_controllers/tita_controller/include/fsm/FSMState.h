@@ -8,6 +8,8 @@
 #include "common/enumClass.h"
 #include "fsm/ControlFSMData.h"
 
+#define USE_REAL_BIKE 1
+
 class FSMState
 {
 public:
