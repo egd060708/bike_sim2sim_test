@@ -333,7 +333,8 @@ void FSMState_TraditionCtrl::run()
 
   for (int i = 0; i < 3; i++)
   {
-    this->_data->low_cmd->tau_cmd[i] = this->bike_state.ctrl_output[i];
+    // this->_data->low_cmd->tau_cmd[i] = this->bike_state.ctrl_output[i];
+    this->_data->low_cmd->tau_cmd[i] = 0;
   }
 }
 

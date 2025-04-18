@@ -153,7 +153,8 @@ void FSMState_RL::run()
 
   for (int i = 0; i < NUM_OUTPUT; i++)
   {
-    this->_data->low_cmd->tau_cmd[i] = this->torques[i];
+    // this->_data->low_cmd->tau_cmd[i] = this->torques[i];
+    this->_data->low_cmd->tau_cmd[i] = 0;
   }
 
   for (int i = 0; i < NUM_OUTPUT; i++)
