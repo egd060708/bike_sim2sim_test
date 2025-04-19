@@ -21,13 +21,16 @@ class CudaTest
 {
 private:
   bool cuda_init = false;
-  nvinfer1::ICudaEngine * get_engine(const std::string & engine_file_path);
+  nvinfer1::ICudaEngine * get_engine(int _numObs, int _obsBuff, int _numOutput, const std::string & engine_file_path);
   void cuda_memory_init(void);
   // Cuda pipeline config.
   float * buffers[3];
-  size_t input_size_0 = 33  * sizeof(float);
-  size_t input_size_1 = 33  * 10 * sizeof(float);
-  size_t output_size = 8 * sizeof(float);
+  // size_t input_size_0 = 33  * sizeof(float);
+  // size_t input_size_1 = 33  * 10 * sizeof(float);
+  // size_t output_size = 8 * sizeof(float);
+  size_t input_size_0;
+  size_t input_size_1;
+  size_t output_size;
   cudaStream_t stream;
   nvinfer1::ICudaEngine * engine_;
   nvinfer1::IExecutionContext * context;

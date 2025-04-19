@@ -83,11 +83,14 @@ void CudaTest::do_inference(
 
 bool CudaTest::get_cuda_init(void) { return cuda_init; }
 
-CudaTest::CudaTest(const std::string & engine_file_path)
+CudaTest::CudaTest(int _numObs, int _obsBuff, int _numOutput, const std::string & engine_file_path)
 {
-  engine_ = get_engine(engine_file_path);
-  if (engine_ != nullptr) {
-    context = engine_->createExecutionContext();
+  this->input_size_0 = _numObs * sizeof(float);
+  this->input_size_1 = _numObs * _obsBuff * sizeof(float);
+  this->output_size = _numOutput * sizeof(float);
+  this->engine_ = get_engine(engine_file_path);
+  if (this->engine_ != nullptr) {
+    this->context = engine_->createExecutionContext();
     cuda_memory_init();
     cuda_init = true;
   } else {
