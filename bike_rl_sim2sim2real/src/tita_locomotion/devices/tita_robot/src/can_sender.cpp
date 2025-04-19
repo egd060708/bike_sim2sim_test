@@ -51,6 +51,7 @@ bool MotorsCanSendApi::send_motors_can(std::vector<api_motor_out_t> motors)
     std::cerr << "[MOTORS_CAN_SEND] motors size must be multiple of 4" << std::endl;
     return false;
   }
+  
   bool send_success = true;
   struct canfd_frame frame;
   frame.len = 48U;
@@ -66,6 +67,7 @@ bool MotorsCanSendApi::send_motors_can(std::vector<api_motor_out_t> motors)
     std::memcpy(frame.data + 12, &motor.velocity, sizeof(motor.velocity));
     std::memcpy(frame.data + 16, &motor.kd, sizeof(motor.kd));
     std::memcpy(frame.data + 20, &motor.torque, sizeof(motor.torque));
+    // std::cout << "t1: " << motor.torque <<std::endl;
 
     motor = motors[2 * id + 1];
     motor.timestamp = now;
@@ -75,6 +77,7 @@ bool MotorsCanSendApi::send_motors_can(std::vector<api_motor_out_t> motors)
     std::memcpy(frame.data + 36, &motor.velocity, sizeof(motor.velocity));
     std::memcpy(frame.data + 40, &motor.kd, sizeof(motor.kd));
     std::memcpy(frame.data + 44, &motor.torque, sizeof(motor.torque));
+    // std::cout << "t2: " << motor.torque <<std::endl;
     send_success &= can_send_api_->send_can_message(frame);
     std::this_thread::sleep_for(std::chrono::microseconds(150)); // 等待 100 微秒
   }

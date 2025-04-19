@@ -1,15 +1,17 @@
 #include "fsm/FSMState_Passive.h"
+#include <unistd.h>
 /**
  * FSM State that calls no controls. Meant to be a safe state where the
  * robot should not do anything as all commands will be set to 0.
  */
 
 FSMState_Passive::FSMState_Passive(std::shared_ptr<ControlFSMData> data)
-: FSMState(data, FSMStateName::PASSIVE, "passive")
+    : FSMState(data, FSMStateName::PASSIVE, "passive")
 {
 }
 
-void FSMState_Passive::enter() { _data->state_command->firstRun = true; }
+void FSMState_Passive::enter() { 
+  _data->state_command->firstRun = true; }
 
 void FSMState_Passive::run()
 {
@@ -27,6 +29,17 @@ void FSMState_Passive::run()
   //   PRINT_MAT(_data->low_state_->dq.tail(6));
   // }
   // _data->_stateEstimator->run();
+  // std::cout << "\033[2J"; // 清屏
+  std::cout << "\033[17A\r"; // \033[3A 表示上移3行
+  for (int i = 0; i < _data->low_state->q.rows(); i++)
+  {
+    std::cout << "motor" << i << ":" << "\033[K" << "\n"
+              << "q:  " << _data->low_state->q[i] << "\033[K" << "\n"
+              << "dq: " << _data->low_state->dq[i] << "\033[K" << std::endl;
+  }
+  std::cout << "angVel: \n" << _data->state_estimator->getResult().omegaBody << "\033[K" << std::endl;
+  std::cout << "rpy: \n" << _data->state_estimator->getResult().rpy << "\033[K" << std::endl;
+  
 }
 
 void FSMState_Passive::exit() {}
@@ -36,26 +49,28 @@ FSMStateName FSMState_Passive::checkTransition()
   this->_nextStateName = this->_stateName;
 
   // Switch FSM control mode
-  if (fsm_name_pre_ != _data->state_command->desire_data_->fsm_state_name) {
-    switch (_data->state_command->desire_data_->fsm_state_name) {
-      case FSMStateName::RECOVERY_STAND:
-        this->_nextStateName = FSMStateName::RECOVERY_STAND;
-        break;
+  if (fsm_name_pre_ != _data->state_command->desire_data_->fsm_state_name)
+  {
+    switch (_data->state_command->desire_data_->fsm_state_name)
+    {
+    case FSMStateName::RECOVERY_STAND:
+      this->_nextStateName = FSMStateName::RECOVERY_STAND;
+      break;
 
-      case FSMStateName::PASSIVE:  // normal c
-        break;
-      case FSMStateName::JOINT_PD:  // normal c
-        this->_nextStateName = FSMStateName::JOINT_PD;
-        break;
-      case FSMStateName::RL:
-        this->_nextStateName = FSMStateName::RL;
-        break;
-      case FSMStateName::TRADITION_CTRL:
-        this->_nextStateName = FSMStateName::TRADITION_CTRL;
-        break;
+    case FSMStateName::PASSIVE: // normal c
+      break;
+    case FSMStateName::JOINT_PD: // normal c
+      this->_nextStateName = FSMStateName::JOINT_PD;
+      break;
+    case FSMStateName::RL:
+      this->_nextStateName = FSMStateName::RL;
+      break;
+    case FSMStateName::TRADITION_CTRL:
+      this->_nextStateName = FSMStateName::TRADITION_CTRL;
+      break;
 
-      default:
-        break;
+    default:
+      break;
     }
   }
   fsm_name_pre_ = _data->state_command->desire_data_->fsm_state_name;

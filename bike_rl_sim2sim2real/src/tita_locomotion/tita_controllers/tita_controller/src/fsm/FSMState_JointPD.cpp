@@ -23,12 +23,13 @@ FSMState_JointPD::FSMState_JointPD(std::shared_ptr<ControlFSMData> data)
   // Post control safety checks
   // this->checkPDesFoot = false;
   // this->checkForceFeedForward = false;
-  size_t dof = _data->params->dof_chassis;
+  size_t dof = 3;
   initial_jpos.setZero(dof);
 }
 
 void FSMState_JointPD::enter()
 {
+  std::cout << "checkin" << std::endl;
   // Default is to not transition
   this->_nextStateName = this->_stateName;
   initial_jpos = this->_data->low_state->q;
@@ -50,13 +51,14 @@ void FSMState_JointPD::run()
   Vec3<scalar_t> kd_joint = Vec3<scalar_t>(1,1,1);
   DVec<scalar_t> initial_djpos(initial_jpos.size());
   initial_djpos.setZero();
-  _data->low_cmd->tau_cmd = kp_joint.cwiseProduct(initial_jpos - _data->low_state->q) +
-                            kd_joint.cwiseProduct(initial_djpos - _data->low_state->dq);
-  // std::cout << "kp: " << kp_joint << std::endl;
-  // std::cout << "kd: " << kd_joint << std::endl;
-  for (Eigen::Index i(0); i < initial_jpos.size(); ++i) {
-    bound(_data->low_cmd->tau_cmd(i), _data->params->torque_limit[i]);
-  }
+  this->_data->low_cmd->tau_cmd[0] = 0;
+  this->_data->low_cmd->tau_cmd[1] = 2;
+  this->_data->low_cmd->tau_cmd[2] = 0;
+  // _data->low_cmd->tau_cmd = kp_joint.cwiseProduct(initial_jpos - _data->low_state->q) +
+  //                           kd_joint.cwiseProduct(initial_djpos - _data->low_state->dq);
+  // for (Eigen::Index i(0); i < initial_jpos.size(); ++i) {
+  //   bound(_data->low_cmd->tau_cmd(i), _data->params->torque_limit[i]);
+  // }
 }
 
 /**

@@ -51,12 +51,14 @@ private:
   void cmd_vel_cb();
   void posestamped_cb();
   void fsm_goal_cb();
+  void ctrl_mode_cb();
   void param_cb();
 
   std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Joy>> joy_subscription_;
   std::shared_ptr<rclcpp::Publisher<geometry_msgs::msg::Twist>> cmd_vel_publisher_;
   std::shared_ptr<rclcpp::Publisher<geometry_msgs::msg::PoseStamped>> posestamped_publisher_;
   std::shared_ptr<rclcpp::Publisher<std_msgs::msg::String>> fsm_goal_publisher_;
+  std::shared_ptr<rclcpp::Publisher<std_msgs::msg::String>> ctrl_mode_publisher_;
 
   std::shared_ptr<realtime_tools::RealtimePublisher<geometry_msgs::msg::Twist>>
     realtime_cmd_vel_publisher_;
@@ -64,6 +66,8 @@ private:
     realtime_posestamped_publisher_;
   std::shared_ptr<realtime_tools::RealtimePublisher<std_msgs::msg::String>>
     realtime_fsm_goal_publisher_;
+  std::shared_ptr<realtime_tools::RealtimePublisher<std_msgs::msg::String>>
+    realtime_ctrl_mode_publisher_;
   
   double roll_{0}, pitch_{0}, yaw_{0}, x_{0}, y_{0}, z_{0.1};
   rclcpp::Duration period_ = rclcpp::Duration::from_seconds(0.0);
