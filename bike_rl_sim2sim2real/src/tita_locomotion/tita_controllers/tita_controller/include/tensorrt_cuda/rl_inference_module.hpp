@@ -16,7 +16,7 @@ public:
         this->_numObs = _numObs;
         this->_obsBuff = _obsBuff;
         this->_numOuput = _numOutput;
-        this->cuda = std::make_shared<CudaTest>(engine_file_path);
+        this->cuda = std::make_shared<CudaTest>(_numObs, _obsBuff, _numOutput, engine_file_path);
     }
     ~RL_InferenceModule()
     {
