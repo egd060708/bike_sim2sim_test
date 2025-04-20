@@ -261,7 +261,8 @@
    obs_buff.push_back(angle_err * this->params_.commands_scale[2]);
    if (NUM_OBS == 22)
    {
-     obs_buff.push_back((double)this->heading_cmd_);
+    //  obs_buff.push_back((double)this->heading_cmd_);
+    obs_buff.push_back(0);
    }
  
    std::cout << "commend: " << this->x_vel_cmd_ << ", " << this->heading_cmd_ << ", " << angle_err << std::endl;

@@ -21,7 +21,7 @@ class CudaTest
 {
 private:
   bool cuda_init = false;
-  nvinfer1::ICudaEngine * get_engine(int _numObs, int _obsBuff, int _numOutput, const std::string & engine_file_path);
+  nvinfer1::ICudaEngine * get_engine(const std::string & engine_file_path);
   void cuda_memory_init(void);
   // Cuda pipeline config.
   float * buffers[3];
@@ -39,7 +39,7 @@ private:
 public:
   void do_inference(const float * input_0, const float * input_1, float * output);
   bool get_cuda_init(void);
-  explicit CudaTest(const std::string & engine_file_path);
+  explicit CudaTest(int _numObs, int _obsBuff, int _numOutput, const std::string & engine_file_path);
   ~CudaTest();
 };
 

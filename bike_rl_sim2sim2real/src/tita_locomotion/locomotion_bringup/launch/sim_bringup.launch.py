@@ -44,7 +44,7 @@ def generate_launch_description():
         )
     )
 
-    urdf = "robot.xacro"
+    urdf = "robot_sim.xacro"
     yaml_path = "locomotion_bringup"
     # launch webots bridge
     webots_controller_manager_launch = IncludeLaunchDescription(
