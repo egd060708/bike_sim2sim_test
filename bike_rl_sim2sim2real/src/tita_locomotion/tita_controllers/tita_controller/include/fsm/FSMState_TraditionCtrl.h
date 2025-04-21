@@ -108,6 +108,7 @@ private:
   // generate controller
   PIDmethod bike_motor_pid[3];
   PIDmethod bike_heading_pid[2];
+  multiCircle turn_circle = multiCircle(3.1415926);
 
   // pid controller
   PIDmethod bike_balance_pid;

@@ -153,8 +153,8 @@
  
    for (int i = 0; i < NUM_OUTPUT; i++)
    {
-     this->_data->low_cmd->tau_cmd[i] = this->torques[i];
-     // this->_data->low_cmd->tau_cmd[i] = 0;
+    //  this->_data->low_cmd->tau_cmd[i] = this->torques[i];
+     this->_data->low_cmd->tau_cmd[i] = 0;
    }
  
    for (int i = 0; i < NUM_OUTPUT; i++)
@@ -255,14 +255,16 @@
    this->heading_pid.target = angle_err;
    this->heading_pid.current = 0;
    angle_err = this->heading_pid.Adjust(0);
+
+  //  angle_err = (double)this->heading_cmd_;
  
    obs_buff.push_back(this->x_vel_cmd_ * this->params_.commands_scale[0]);
    obs_buff.push_back(0.0);
    obs_buff.push_back(angle_err * this->params_.commands_scale[2]);
    if (NUM_OBS == 22)
    {
-    //  obs_buff.push_back((double)this->heading_cmd_);
-    obs_buff.push_back(0);
+     obs_buff.push_back((double)this->heading_cmd_);
+    // obs_buff.push_back(0);
    }
  
    std::cout << "commend: " << this->x_vel_cmd_ << ", " << this->heading_cmd_ << ", " << angle_err << std::endl;

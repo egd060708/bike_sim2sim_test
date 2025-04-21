@@ -52,7 +52,7 @@ void FSMState_JointPD::run()
   DVec<scalar_t> initial_djpos(initial_jpos.size());
   initial_djpos.setZero();
   this->_data->low_cmd->tau_cmd[0] = 0;
-  this->_data->low_cmd->tau_cmd[1] = 2;
+  this->_data->low_cmd->tau_cmd[1] = 0;
   this->_data->low_cmd->tau_cmd[2] = 0;
   // _data->low_cmd->tau_cmd = kp_joint.cwiseProduct(initial_jpos - _data->low_state->q) +
   //                           kd_joint.cwiseProduct(initial_djpos - _data->low_state->dq);
