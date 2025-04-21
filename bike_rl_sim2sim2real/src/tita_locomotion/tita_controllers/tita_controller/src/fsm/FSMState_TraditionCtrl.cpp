@@ -231,10 +231,10 @@
    this->bike_lqr_params.heading_imax[1] = 0.1;
    this->bike_lqr_params.heading_lim[1] = 0.1;
  
-   this->bike_lqr_params.motor_kp[0] = 15.;
-   this->bike_lqr_params.motor_ki[0] = 60.;
+   this->bike_lqr_params.motor_kp[0] = 0.5;
+   this->bike_lqr_params.motor_ki[0] = 20.;
    this->bike_lqr_params.motor_kd[0] = -0.3;
-   this->bike_lqr_params.motor_imax[0] = 2.;
+   this->bike_lqr_params.motor_imax[0] = 3.;
    this->bike_lqr_params.motor_lim[0] = 3.;
  
    this->bike_lqr_params.motor_kp[1] = 20.;
@@ -243,11 +243,11 @@
    this->bike_lqr_params.motor_imax[1] = 0.;
    this->bike_lqr_params.motor_lim[1] = 10.;
  
-   this->bike_lqr_params.motor_kp[2] = 10.;
+   this->bike_lqr_params.motor_kp[2] = 0.25;
    this->bike_lqr_params.motor_ki[2] = 10.;
-   this->bike_lqr_params.motor_kd[2] = -0.2;
-   this->bike_lqr_params.motor_imax[2] = 5.;
-   this->bike_lqr_params.motor_lim[2] = 10.;
+   this->bike_lqr_params.motor_kd[2] = 0.;
+   this->bike_lqr_params.motor_imax[2] = 2.;
+   this->bike_lqr_params.motor_lim[2] = 2.;
  
   /*参数*/
 this->bike_lqr_params.lqrs[0].a = -7.818794e-02;
@@ -311,13 +311,13 @@ this->bike_lqr_params.lqrs[2].h = -1.932070e-01;
    // update body state
    this->_bike_state_update();
  
-   this->threadRunning = true;
-   if (this->thread_first_)
-   {
-     this->forward_thread = std::thread(&FSMState_TraditionCtrl::_controller_loop, this);
-     this->thread_first_ = false;
-   }
-   this->stop_update_ = false;
+  //  this->threadRunning = true;
+  //  if (this->thread_first_)
+  //  {
+  //    this->forward_thread = std::thread(&FSMState_TraditionCtrl::_controller_loop, this);
+  //    this->thread_first_ = false;
+  //  }
+  //  this->stop_update_ = false;
  }
  
  void FSMState_TraditionCtrl::run()
@@ -336,7 +336,45 @@ this->bike_lqr_params.lqrs[2].h = -1.932070e-01;
    this->bike_state.ref_rollVel = 0.;
    this->bike_state.ref_turn = 0.;
 
-   std::cout << "heading1: " << this->bike_heading_pid[1].D_Term << std::endl;
+   // control loop
+   if(this->ctrl_mode == TEST)
+    {
+      // set test params
+      this->_test_params_update();
+    }
+    else if(this->ctrl_mode == PID)
+    {
+      // set pid params
+      this->_pid_params_update();
+    }
+    else if(this->ctrl_mode == LQR)
+    {
+      // set lqr params
+      this->_lqr_params_update();
+    }
+    // update body state
+    this->_bike_state_update();
+
+    if(this->ctrl_mode == TEST)
+    {
+      // use test controller
+      this->_test_cal();
+      this->_test_actuate();
+    }
+    else if(this->ctrl_mode == PID)
+    {
+      // use pid controller
+      this->_high_level_pid_cal();
+      this->_low_level_pid_cal();
+      this->_pid_actuate();
+    }
+    else if(this->ctrl_mode == LQR)
+    {
+      // use pid controller
+      this->_high_level_lqr_cal();
+      this->_low_level_lqr_cal();
+      this->_lqr_actuate();
+    }
  
    for (int i = 0; i < 3; i++)
    {
@@ -347,7 +385,7 @@ this->bike_lqr_params.lqrs[2].h = -1.932070e-01;
  
  void FSMState_TraditionCtrl::exit() 
  {
-   this->stop_update_ = true;
+  //  this->stop_update_ = true;
  }
  
  void FSMState_TraditionCtrl::_controller_loop()
@@ -401,7 +439,7 @@ this->bike_lqr_params.lqrs[2].h = -1.932070e-01;
      // {
      //   this->_data->low_cmd->tau_cmd[i] = this->bike_state.ctrl_output[i];
      // }
-     absoluteWait(_start_time, (long long)(0.01 * 1000000));
+     absoluteWait(_start_time, (long long)(0.002 * 1000000));
    }
    this->threadRunning = false;
  }
