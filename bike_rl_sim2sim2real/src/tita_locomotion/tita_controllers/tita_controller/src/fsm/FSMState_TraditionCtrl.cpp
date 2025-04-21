@@ -333,8 +333,8 @@
  
    for (int i = 0; i < 3; i++)
    {
-     this->_data->low_cmd->tau_cmd[i] = this->bike_state.ctrl_output[i];
-     // this->_data->low_cmd->tau_cmd[i] = 0;
+    //  this->_data->low_cmd->tau_cmd[i] = this->bike_state.ctrl_output[i];
+     this->_data->low_cmd->tau_cmd[i] = 0;
    }
  }
  
@@ -407,10 +407,6 @@
    // Switch FSM control mode
    switch (this->_data->state_command->desire_data_->fsm_state_name)
    {
-   case FSMStateName::RECOVERY_STAND:
-     this->_nextStateName = FSMStateName::RECOVERY_STAND;
-     break;
- 
    case FSMStateName::RL: // normal c
      this->_nextStateName = FSMStateName::RL;
      break;
@@ -418,8 +414,8 @@
    case FSMStateName::TRADITION_CTRL:
      break;
  
-   case FSMStateName::TRANSFORM_DOWN:
-     this->_nextStateName = FSMStateName::TRANSFORM_DOWN;
+   case FSMStateName::JOINT_PD:
+     this->_nextStateName = FSMStateName::JOINT_PD;
      break;
  
    case FSMStateName::PASSIVE: // normal c

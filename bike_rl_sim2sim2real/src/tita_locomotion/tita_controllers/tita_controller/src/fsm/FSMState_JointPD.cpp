@@ -5,6 +5,7 @@
  */
 
 #include "fsm/FSMState_JointPD.h"
+#include "common/timeMarker.h"
 // #include <Utilities/Utilities_print.h>
 
 /**
@@ -25,6 +26,13 @@ FSMState_JointPD::FSMState_JointPD(std::shared_ptr<ControlFSMData> data)
   // this->checkForceFeedForward = false;
   size_t dof = 3;
   initial_jpos.setZero(dof);
+
+  for(int i=0;i<3;i++)
+  {
+    this->motor_pid_test[i].PID_Init(Common, 0);
+    this->motor_pid_test[i].getMicroTick_regist(getSystemTime);
+  }
+  this->motor_pid_test[2].Params_Config(0.25,10.,0.,2.,2.);
 }
 
 void FSMState_JointPD::enter()
@@ -34,6 +42,14 @@ void FSMState_JointPD::enter()
   this->_nextStateName = this->_stateName;
   initial_jpos = this->_data->low_state->q;
   initial_jpos(0) = 0.;
+
+  this->threadRunning = true;
+  if (this->thread_first_)
+  {
+    this->forward_thread = std::thread(&FSMState_JointPD::_controller_loop, this);
+    this->thread_first_ = false;
+  }
+  this->stop_update_ = false;
 }
 
 /**
@@ -51,14 +67,36 @@ void FSMState_JointPD::run()
   Vec3<scalar_t> kd_joint = Vec3<scalar_t>(1,1,1);
   DVec<scalar_t> initial_djpos(initial_jpos.size());
   initial_djpos.setZero();
-  this->_data->low_cmd->tau_cmd[0] = 0;
-  this->_data->low_cmd->tau_cmd[1] = 2;
-  this->_data->low_cmd->tau_cmd[2] = 0;
+  this->_data->low_cmd->tau_cmd[0] = 0.;
+  this->_data->low_cmd->tau_cmd[1] = 0.;
+  this->_data->low_cmd->tau_cmd[2] = this->test_out[2];
+  
   // _data->low_cmd->tau_cmd = kp_joint.cwiseProduct(initial_jpos - _data->low_state->q) +
   //                           kd_joint.cwiseProduct(initial_djpos - _data->low_state->dq);
   // for (Eigen::Index i(0); i < initial_jpos.size(); ++i) {
   //   bound(_data->low_cmd->tau_cmd(i), _data->params->torque_limit[i]);
   // }
+}
+
+void FSMState_JointPD::_controller_loop()
+{
+  while(this->threadRunning)
+  {
+    long long _start_time = getSystemTime();
+    if(!this->stop_update_)
+    {
+      this->motor_pid_test[2].target = ref_v_mf.f(this->_data->state_command->rc_data_->twist_linear[point::X]/0.175);
+      if(abs(this->motor_pid_test[2].target)<0.1)
+      {
+        this->motor_pid_test[2].target = 0;
+      }
+      this->motor_pid_test[2].current = _data->low_state->dq[2];
+      this->motor_pid_test[2].Adjust(0,_data->low_state->dq[2]);
+      this->test_out[2] = this->motor_pid_test[2].out;
+    }
+    absoluteWait(_start_time, (long long)(0.0025 * 1000000));
+  }
+  this->threadRunning = false;
 }
 
 /**
@@ -74,9 +112,14 @@ FSMStateName FSMState_JointPD::checkTransition()
 
   // Switch FSM control mode
   switch (_data->state_command->desire_data_->fsm_state_name) {
-    case FSMStateName::RECOVERY_STAND:
+    case FSMStateName::JOINT_PD:
+    break;
+    case FSMStateName::RL: // normal c
+    this->_nextStateName = FSMStateName::RL;
       break;
-
+    case FSMStateName::TRADITION_CTRL:
+      this->_nextStateName = FSMStateName::TRADITION_CTRL;
+      break;
     case FSMStateName::PASSIVE:  // normal c
       this->_nextStateName = FSMStateName::PASSIVE;
       break;
@@ -97,4 +140,5 @@ FSMStateName FSMState_JointPD::checkTransition()
 void FSMState_JointPD::exit()
 {
   // Nothing to clean up when exiting
+  this->stop_update_ = true;
 }

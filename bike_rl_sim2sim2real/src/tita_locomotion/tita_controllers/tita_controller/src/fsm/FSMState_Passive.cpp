@@ -30,6 +30,7 @@ void FSMState_Passive::run()
   // }
   // _data->_stateEstimator->run();
   // std::cout << "\033[2J"; // 清屏
+
   std::cout << "\033[17A\r"; // \033[3A 表示上移3行
   for (int i = 0; i < _data->low_state->q.rows(); i++)
   {
@@ -53,10 +54,6 @@ FSMStateName FSMState_Passive::checkTransition()
   {
     switch (_data->state_command->desire_data_->fsm_state_name)
     {
-    case FSMStateName::RECOVERY_STAND:
-      this->_nextStateName = FSMStateName::RECOVERY_STAND;
-      break;
-
     case FSMStateName::PASSIVE: // normal c
       break;
     case FSMStateName::JOINT_PD: // normal c

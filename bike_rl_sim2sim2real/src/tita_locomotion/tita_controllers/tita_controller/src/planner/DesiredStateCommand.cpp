@@ -1,15 +1,12 @@
 #include "planner/DesiredStateCommand.h"
 /*=========================== Gait Data ===============================*/
 
-
-
-
 void DesiredStateCommand::setup_state_command()
 {
   dt = (scalar_t)1.0f / parameters->update_rate;
 
   RemoterCommandPlanner::Limits twist_linear_limits[3], twist_angular_limits[3],
-    pose_position_limits[3], pose_orientation_limits[3], two_wheel_distance_limits;
+      pose_position_limits[3], pose_orientation_limits[3], two_wheel_distance_limits;
   // clang-format off
   twist_linear_limits[point::X] = RemoterCommandPlanner::Limits{
     nullptr,
@@ -75,33 +72,49 @@ void DesiredStateCommand::setup_state_command()
   pose_position_plan_[point::Z] = RemoterCommandPlanner(
     {RemoterCommandPlanner::RemoteCommand::POSITION}, pose_position_limits[point::Z]);
   two_wheel_distance_plan_ = RemoterCommandPlanner(
-    {RemoterCommandPlanner::RemoteCommand::POSITION}, two_wheel_distance_limits);  // clang-format on
+    {RemoterCommandPlanner::RemoteCommand::POSITION}, two_wheel_distance_limits); // clang-format on
 }
 
 void DesiredStateCommand::convertFSMState()
 {
-  if (rc_data_->fsm_name_ == "idle") {
+  if (rc_data_->fsm_name_ == "idle")
+  {
     desire_data_->fsm_state_name = FSMStateName::PASSIVE;
-  } else if (rc_data_->fsm_name_ == "transform_up") {
-    desire_data_->fsm_state_name = FSMStateName::RECOVERY_STAND;
-  } else if (rc_data_->fsm_name_ == "balance_stand") {
-    desire_data_->fsm_state_name = FSMStateName::BALANCE_STAND;
-  } else if (rc_data_->fsm_name_ == "transform_down") {
-    desire_data_->fsm_state_name = FSMStateName::TRANSFORM_DOWN;
-    // } else if (rc_data_->fsm_name_ == "emergency_stop") {
-  } else if (rc_data_->fsm_name_ == "joint_pd") {
+  }
+  // else if (rc_data_->fsm_name_ == "transform_up")
+  // {
+  //   desire_data_->fsm_state_name = FSMStateName::RECOVERY_STAND;
+  // }
+  // else if (rc_data_->fsm_name_ == "balance_stand")
+  // {
+  //   desire_data_->fsm_state_name = FSMStateName::BALANCE_STAND;
+  // }
+  // else if (rc_data_->fsm_name_ == "transform_down")
+  // {
+  //   desire_data_->fsm_state_name = FSMStateName::TRANSFORM_DOWN;
+  //   // } else if (rc_data_->fsm_name_ == "emergency_stop") {
+  // }
+  else if (rc_data_->fsm_name_ == "joint_pd")
+  {
     desire_data_->fsm_state_name = FSMStateName::JOINT_PD;
-  } else if (rc_data_->fsm_name_ == "rl") {
+  }
+  else if (rc_data_->fsm_name_ == "rl")
+  {
     desire_data_->fsm_state_name = FSMStateName::RL;
-  } else if (rc_data_->fsm_name_ == "traditional_ctrl") {
+  }
+  else if (rc_data_->fsm_name_ == "traditional_ctrl")
+  {
     desire_data_->fsm_state_name = FSMStateName::TRADITION_CTRL;
   }
-} 
+}
 void DesiredStateCommand::convertToStateCommands(std::shared_ptr<RemoteControlData> data)
 {
-  if (data == nullptr) {
+  if (data == nullptr)
+  {
     rcToCommands(rc_data_);
-  } else {
+  }
+  else
+  {
     rcToCommands(data);
   }
 }
@@ -112,7 +125,8 @@ void DesiredStateCommand::clear()
   // desire_data_->twist_angular_int(point::Z) = stateEstimate->rpy(rpy::YAW);
   // desire_data_->two_wheel_distance = parameters->two_wheel_distance;
   // desire_data_->pose_position(point::Z) = parameters->position_height_min;
-  for (size_t id = 0; id < 3; id++) {
+  for (size_t id = 0; id < 3; id++)
+  {
     twist_linear_plan_[id].clear();
     twist_angular_plan_[id].clear();
     pose_position_plan_[id].clear();
@@ -124,7 +138,8 @@ void DesiredStateCommand::clear()
 void DesiredStateCommand::rcToCommands(std::shared_ptr<RemoteControlData> rc_data)
 {
   // clear x and yaw
-  if (firstRun) {
+  if (firstRun)
+  {
     firstRun = false;
     desire_data_->twist_linear_int(point::X) = legWheelsData_->twist_linear_int(point::X);
     desire_data_->twist_angular_int(point::Z) = stateEstimate->rpy(rpy::YAW);
@@ -142,8 +157,9 @@ void DesiredStateCommand::rcToCommands(std::shared_ptr<RemoteControlData> rc_dat
   pose_position_plan_[point::Y].update(rc_data->pose_position[point::Y], dt);
   pose_position_plan_[point::Z].update(rc_data->pose_position[point::Z], dt);
   // two wheel distance
-  two_wheel_distance_plan_.update(rc_data->two_wheel_distance, dt);  // TODO: get from config
-  for (size_t id = 0; id < 3; id++) {
+  two_wheel_distance_plan_.update(rc_data->two_wheel_distance, dt); // TODO: get from config
+  for (size_t id = 0; id < 3; id++)
+  {
     // desire_data_->twist_linear_int(id) = twist_linear_plan_[id].getControlCommand().position;
     // desire_data_->twist_angular_int(id) = twist_angular_plan_[id].getControlCommand().position;
     desire_data_->twist_linear(id) = twist_linear_plan_[id].getControlCommand().velocity;
@@ -155,14 +171,14 @@ void DesiredStateCommand::rcToCommands(std::shared_ptr<RemoteControlData> rc_dat
     desire_data_->pose_rpy_dot(id) = pose_rpy_plan_[id].getControlCommand().velocity;
   }
   desire_data_->two_wheel_distance =
-    two_wheel_distance_plan_.getControlCommand().position + parameters->two_wheel_distance;
+      two_wheel_distance_plan_.getControlCommand().position + parameters->two_wheel_distance;
   desire_data_->two_wheel_distance_dot = two_wheel_distance_plan_.getControlCommand().velocity;
 
   desire_data_->twist_linear_int(point::X) =
-    desire_data_->twist_linear_int(point::X) /*legWheelsData_->twist_linear_int(point::X)*/ +
-    desire_data_->twist_linear(point::X) * dt;
+      desire_data_->twist_linear_int(point::X) /*legWheelsData_->twist_linear_int(point::X)*/ +
+      desire_data_->twist_linear(point::X) * dt;
   desire_data_->twist_angular_int(point::Z) =
-    desire_data_->twist_angular_int(point::Z) + desire_data_->twist_angular(point::Z) * dt;
+      desire_data_->twist_angular_int(point::Z) + desire_data_->twist_angular(point::Z) * dt;
 
   // add bias
   // if (rc_data_->twist_angular[point::Z] > 0) {

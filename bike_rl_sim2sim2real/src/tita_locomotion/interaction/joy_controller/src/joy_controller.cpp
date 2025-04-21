@@ -36,8 +36,8 @@ namespace joy_controller
         tita_topic::manager_pose_command, rclcpp::SystemDefaultsQoS());
     fsm_goal_publisher_ = this->create_publisher<std_msgs::msg::String>(
         tita_topic::manager_key_command, rclcpp::SystemDefaultsQoS());
-    ctrl_mode_publisher_ = this->create_publisher<std_msgs::msg::String>(
-        tita_topic::manager_locomotion_command, rclcpp::SystemDefaultsQoS());
+    // ctrl_mode_publisher_ = this->create_publisher<std_msgs::msg::String>(
+    //     tita_topic::manager_locomotion_command, rclcpp::SystemDefaultsQoS());
 
     // 转换话题为实时话题
     realtime_cmd_vel_publisher_ =
@@ -48,8 +48,8 @@ namespace joy_controller
             posestamped_publisher_);
     realtime_fsm_goal_publisher_ =
         std::make_shared<realtime_tools::RealtimePublisher<std_msgs::msg::String>>(fsm_goal_publisher_);
-    realtime_ctrl_mode_publisher_ =
-        std::make_shared<realtime_tools::RealtimePublisher<std_msgs::msg::String>>(ctrl_mode_publisher_);
+    // realtime_ctrl_mode_publisher_ =
+    //     std::make_shared<realtime_tools::RealtimePublisher<std_msgs::msg::String>>(ctrl_mode_publisher_);
   }
 
   void JoyCommand::init(rclcpp::Node::SharedPtr node)
@@ -190,30 +190,30 @@ namespace joy_controller
     }
   }
 
-  void JoyCommand::ctrl_mode_cb()
-  {
-    if (key_msg_updated_)
-    {
-      if (realtime_ctrl_mode_publisher_ && realtime_ctrl_mode_publisher_->trylock())
-      {
-        auto &msg = realtime_ctrl_mode_publisher_->msg_;
-        if (joy_msg_->axes[5] == 1)
-        {
-          msg.data = "mode1";
-        }
-        else if (joy_msg_->axes[5] == -1)
-        {
-          msg.data = "mode-1";
-        }
-        else if (joy_msg_->axes[5] == 0)
-        {
-          msg.data = "mode0";
-        }
+  // void JoyCommand::ctrl_mode_cb()
+  // {
+  //   if (key_msg_updated_)
+  //   {
+  //     if (realtime_ctrl_mode_publisher_ && realtime_ctrl_mode_publisher_->trylock())
+  //     {
+  //       auto &msg = realtime_ctrl_mode_publisher_->msg_;
+  //       if (joy_msg_->axes[5] == 1)
+  //       {
+  //         msg.data = "mode1";
+  //       }
+  //       else if (joy_msg_->axes[5] == -1)
+  //       {
+  //         msg.data = "mode-1";
+  //       }
+  //       else if (joy_msg_->axes[5] == 0)
+  //       {
+  //         msg.data = "mode0";
+  //       }
 
-        realtime_ctrl_mode_publisher_->unlockAndPublish();
-      }
-    }
-  }
+  //       realtime_ctrl_mode_publisher_->unlockAndPublish();
+  //     }
+  //   }
+  // }
 
   void JoyCommand::joy_cb(const sensor_msgs::msg::Joy::SharedPtr msg)
   {
@@ -237,7 +237,7 @@ namespace joy_controller
     fsm_goal_cb();
     cmd_vel_cb();
     posestamped_cb();
-    ctrl_mode_cb();
+    // ctrl_mode_cb();
     // std::cout << "\nstart: \n0: "
     //           << joy_msg_->axes[0] << "\n1: "
     //           << joy_msg_->axes[1] << "\n2: "

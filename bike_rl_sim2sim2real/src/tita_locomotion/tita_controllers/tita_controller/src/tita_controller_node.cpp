@@ -147,8 +147,10 @@ controller_interface::return_type TitaController::update(
   else
     init_estimator_count_++;
   // controlData_->pinocchio_model->updateState();
+  // std::cout << "before" << std::endl;
   controlData_->state_command->convertFSMState();
   FSMController_->run();
+  // std::cout << "after" << std::endl;
   // Update torque
   for (uint id = 0; id < joints_.size(); id++) {
     joints_[id]->position_command_handle->get().set_value(controlData_->low_cmd->qd[id]);
