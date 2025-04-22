@@ -5,6 +5,7 @@
 #include "FSMState.h"
 #include "../my_controller_module/Pid/Cpp/include/PIDmethod.h"
 #include "../my_filter_module/Cpp/include/my_filters.h"
+#include <chrono>
 
 typedef enum _CtrlMode
 {
@@ -108,6 +109,7 @@ private:
   // generate controller
   PIDmethod bike_motor_pid[3];
   PIDmethod bike_heading_pid[2];
+  multiCircle turn_circle = multiCircle(3.1415926);
 
   // pid controller
   PIDmethod bike_balance_pid;

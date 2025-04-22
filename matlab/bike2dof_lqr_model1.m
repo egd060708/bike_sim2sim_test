@@ -46,7 +46,7 @@ for v1_=bottom:step:top
     %判断可控性
     if (rank(ctrb(sys_d.A,sys_d.B))==xNum)    
         temp=dlqr(sys_d.A,sys_d.B,lqr_Q,lqr_R);
-        if v1_ == 1.5
+        if v1_ == 1.
             disp(sys_c.A)
             disp(sys_c.B)
             disp(sys_d.A)
