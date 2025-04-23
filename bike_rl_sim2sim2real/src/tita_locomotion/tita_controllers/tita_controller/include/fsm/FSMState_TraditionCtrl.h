@@ -139,6 +139,9 @@ private:
   bool stop_update_ = false;
   bool thread_first_ = true;
   void _controller_loop();
+
+  // clear
+  void _pid_clear();
 };
 
 #endif

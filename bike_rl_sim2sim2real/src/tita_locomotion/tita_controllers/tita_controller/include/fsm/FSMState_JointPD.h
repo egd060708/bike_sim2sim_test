@@ -31,6 +31,8 @@ private:
   bool stop_update_ = false;
   bool thread_first_ = true;
   void _controller_loop();
+
+  multiCircle turn_circle = multiCircle(3.1415926);
 };
 
 #endif
