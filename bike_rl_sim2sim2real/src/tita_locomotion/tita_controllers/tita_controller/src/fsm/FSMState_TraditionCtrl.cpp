@@ -169,8 +169,8 @@
  
  #else
    // multiCircle offset
-  //  this->turn_circle.set_offset(1.82);
-  this->turn_circle.set_offset(0.);
+   this->turn_circle.set_offset(0.82);
+  // this->turn_circle.set_offset(0.);
 
    // pid params
    this->bike_pid_params.balance_kp = -20.;
@@ -186,7 +186,7 @@
    this->bike_pid_params.heading_lim[0] = 1.;
  
    this->bike_pid_params.heading_kp[1] = 0.;
-   this->bike_pid_params.heading_ki[1] = -0.2;
+   this->bike_pid_params.heading_ki[1] = -0.4;
    this->bike_pid_params.heading_kd[1] = 0;
    this->bike_pid_params.heading_imax[1] = 0.05;
    this->bike_pid_params.heading_lim[1] = 0.05;
@@ -350,7 +350,7 @@ this->bike_lqr_params.lqrs[2].h = 2.033561e-01;
    std::cout << "turn_c: " << turn_c_pid.target << ", " << turn_c_pid.current << std::endl;
  
    // update commands
-   this->bike_state.ref_v = 1.5*this->_data->state_command->rc_data_->twist_linear[point::X];
+   this->bike_state.ref_v = 2.*this->_data->state_command->rc_data_->twist_linear[point::X];
    this->bike_state.ref_yaw = this->_data->state_command->rc_data_->twist_angular[point::Z];
    this->bike_state.ref_yawVel = this->_data->state_command->rc_data_->twist_angular[point::Z];
    this->bike_state.ref_roll = -0.05 * this->_data->state_command->rc_data_->twist_angular[point::Z];

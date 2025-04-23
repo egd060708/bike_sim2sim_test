@@ -46,7 +46,7 @@ FSMState_JointPD::FSMState_JointPD(std::shared_ptr<ControlFSMData> data)
   this->motor_pid_test[2].Params_Config(0.5,0.01,0.05,4.,4.);
 
   // 转向偏置
-  this->turn_circle.set_offset(1.82);
+  this->turn_circle.set_offset(0.82);
 }
 
 void FSMState_JointPD::enter()

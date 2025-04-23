@@ -77,6 +77,9 @@
         "valarray": "cpp",
         "variant": "cpp",
         "*.ipp": "cpp",
-        "__nullptr": "cpp"
-    }
+        "__nullptr": "cpp",
+        "queue": "cpp",
+        "stack": "cpp"
+    },
+    "cmake.sourceDirectory": "/home/robot/Git_Project/github/bike_sim2sim_test/sbike250417"
 }

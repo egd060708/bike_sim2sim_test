@@ -73,6 +73,7 @@ namespace joy_controller
       auto &msg = realtime_cmd_vel_publisher_->msg_;
       msg.linear.x = -joy_msg_->axes[2] * params_.twist_linear_ratio;
       msg.angular.z = joy_msg_->axes[0] * params_.twist_angular_ratio;
+      // msg.angular.z = joy_msg_->axes[3] * params_.twist_angular_ratio;
 
       realtime_cmd_vel_publisher_->unlockAndPublish();
     }

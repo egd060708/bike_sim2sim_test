@@ -160,8 +160,8 @@ void FSMState_RL::run()
             << this->torques[2] << std::endl;
   for (int i = 0; i < NUM_OUTPUT; i++)
   {
-     this->_data->low_cmd->tau_cmd[i] = upper::constrain(this->torques[i],this->params_.torque_limits[i]);
-    // this->_data->low_cmd->tau_cmd[i] = 0;
+    //  this->_data->low_cmd->tau_cmd[i] = upper::constrain(this->torques[i],this->params_.torque_limits[i]);
+    this->_data->low_cmd->tau_cmd[i] = 0;
   }
 
   for (int i = 0; i < NUM_OUTPUT; i++)
