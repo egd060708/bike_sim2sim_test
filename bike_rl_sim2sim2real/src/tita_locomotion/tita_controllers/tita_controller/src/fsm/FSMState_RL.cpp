@@ -77,11 +77,11 @@ void FSMState_RL::enter()
   // this->dofs_.P_p[0] = 40;
   // this->dofs_.P_d[0] = 5.;
   this->dofs_.P_p[1] = 10;
-  this->dofs_.P_d[1] = 0.4;
+  this->dofs_.P_d[1] = 0.2;
   if (NUM_OUTPUT == 3)
   {
     this->dofs_.P_p[2] = 10;
-    this->dofs_.P_d[2] = 0.4;
+    this->dofs_.P_d[2] = 0.2;
   }
 
   this->dofs_.V_p[0] = 10.;
@@ -100,6 +100,10 @@ void FSMState_RL::enter()
   {
     this->dofs_.T_d[2] = 0.2;
   }
+
+  this->params_.torque_limits[0] = 3;
+  this->params_.torque_limits[1] = 20;
+  this->params_.torque_limits[2] = 20;
 
   // const float default_dof_pos_tmp[NUM_OUTPUT] = {0.};
   this->heading_cmd_ = 0.;
@@ -151,11 +155,13 @@ void FSMState_RL::run()
   this->_data->low_cmd->kp.setZero();
   this->_data->low_cmd->kd.setZero();
   this->_data->low_cmd->tau_cmd.setZero();
-
+  std::cout << "torques: \n" << this->torques[0] << "\n"
+            << this->torques[1] << "\n"
+            << this->torques[2] << std::endl;
   for (int i = 0; i < NUM_OUTPUT; i++)
   {
-    //  this->_data->low_cmd->tau_cmd[i] = this->torques[i];
-    this->_data->low_cmd->tau_cmd[i] = 0;
+     this->_data->low_cmd->tau_cmd[i] = upper::constrain(this->torques[i],this->params_.torque_limits[i]);
+    // this->_data->low_cmd->tau_cmd[i] = 0;
   }
 
   for (int i = 0; i < NUM_OUTPUT; i++)
@@ -253,7 +259,7 @@ const std::vector<float> FSMState_RL::_GetObs()
   this->heading_pid.current = 0;
   angle_err = this->heading_pid.Adjust(0);
 
-  //  angle_err = (double)this->heading_cmd_;
+  // angle_err = (double)this->heading_cmd_;
 
   obs_buff.push_back(this->x_vel_cmd_ * this->params_.commands_scale[0]);
   obs_buff.push_back(0.0);
@@ -264,8 +270,9 @@ const std::vector<float> FSMState_RL::_GetObs()
     // obs_buff.push_back(0);
   }
 
-  std::cout << "commend: " << this->x_vel_cmd_ << ", " << this->heading_cmd_ << ", " << angle_err << std::endl;
-  std::cout << "angVel: " << angvel(2) << std::endl;
+  // std::cout << "commend: " << this->x_vel_cmd_ << ", " << this->heading_cmd_ << ", " << angle_err << std::endl;
+  // std::cout << "angVel: " << angvel(2) << std::endl;
+  
 
   // pos
   for (int i = 0; i < NUM_OUTPUT; ++i)

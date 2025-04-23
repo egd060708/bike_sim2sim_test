@@ -35,7 +35,7 @@
      this->bike_motor_pid[i].PID_Init(Common, 0);
      this->bike_motor_pid[i].getMicroTick_regist(getSystemTime);
    }
-   this->bike_heading_pid[1].d_of_current = false;
+  //  this->bike_heading_pid[1].d_of_current = false;
  
  #if USE_REAL_BIKE == 0
    // multiCircle offset
@@ -169,7 +169,8 @@
  
  #else
    // multiCircle offset
-   this->turn_circle.set_offset(1.82);
+  //  this->turn_circle.set_offset(1.82);
+  this->turn_circle.set_offset(0.);
 
    // pid params
    this->bike_pid_params.balance_kp = -20.;
@@ -187,8 +188,8 @@
    this->bike_pid_params.heading_kp[1] = 0.;
    this->bike_pid_params.heading_ki[1] = -0.2;
    this->bike_pid_params.heading_kd[1] = 0;
-   this->bike_pid_params.heading_imax[1] = 0.15;
-   this->bike_pid_params.heading_lim[1] = 0.15;
+   this->bike_pid_params.heading_imax[1] = 0.05;
+   this->bike_pid_params.heading_lim[1] = 0.05;
  
    // low gain
    this->bike_pid_params.motor_kp[0] = 20.;
@@ -217,6 +218,8 @@
      this->bike_lqr_pid[i].getMicroTick_regist(getSystemTime);
      this->bike_lqr_pid[i].fit_degree = 7;
    }
+   this->turn_c_pid.PID_Init(Common, 0);
+   this->turn_c_pid.getMicroTick_regist(getSystemTime);
  
    // lqr params init
    this->bike_lqr_params.heading_kp[0] = 0.5;
@@ -227,9 +230,9 @@
  
    this->bike_lqr_params.heading_kp[1] = 0.;
    this->bike_lqr_params.heading_ki[1] = -0.2;
-   this->bike_lqr_params.heading_kd[1] = 0.;
-   this->bike_lqr_params.heading_imax[1] = 0.05;
-   this->bike_lqr_params.heading_lim[1] = 0.05;
+   this->bike_lqr_params.heading_kd[1] = 0.0;
+   this->bike_lqr_params.heading_imax[1] = 0.1;
+   this->bike_lqr_params.heading_lim[1] = 0.1;
  
    this->bike_lqr_params.motor_kp[0] = 5.;
    this->bike_lqr_params.motor_ki[0] = 60.;
@@ -248,34 +251,40 @@
    this->bike_lqr_params.motor_kd[2] = 0.05;
    this->bike_lqr_params.motor_imax[2] = 4.;
    this->bike_lqr_params.motor_lim[2] = 4.;
+
+   this->bike_lqr_params.turn_c_kp = 5.;
+   this->bike_lqr_params.turn_c_lim = 1.;
+
+   this->bike_lqr_params.roll_tar_slope = 0.025;
+   this->bike_lqr_params.vel_tar_slope = 0.2;
  
   /*参数*/
-this->bike_lqr_params.lqrs[0].a = -7.763974e-02;
-this->bike_lqr_params.lqrs[0].b = 1.652827e+00;
-this->bike_lqr_params.lqrs[0].c = -1.462575e+01;
-this->bike_lqr_params.lqrs[0].d = 6.968134e+01;
-this->bike_lqr_params.lqrs[0].e = -1.934647e+02;
-this->bike_lqr_params.lqrs[0].f = 3.162160e+02;
-this->bike_lqr_params.lqrs[0].g = -2.919109e+02;
-this->bike_lqr_params.lqrs[0].h = 2.017336e+02;
+this->bike_lqr_params.lqrs[0].a = -9.063404e-02;
+this->bike_lqr_params.lqrs[0].b = 1.932797e+00;
+this->bike_lqr_params.lqrs[0].c = -1.713936e+01;
+this->bike_lqr_params.lqrs[0].d = 8.186656e+01;
+this->bike_lqr_params.lqrs[0].e = -2.279759e+02;
+this->bike_lqr_params.lqrs[0].f = 3.736884e+02;
+this->bike_lqr_params.lqrs[0].g = -3.443513e+02;
+this->bike_lqr_params.lqrs[0].h = 1.756409e+02;
 /*参数*/
-this->bike_lqr_params.lqrs[1].a = -1.484302e-02;
-this->bike_lqr_params.lqrs[1].b = 3.168462e-01;
-this->bike_lqr_params.lqrs[1].c = -2.814512e+00;
-this->bike_lqr_params.lqrs[1].d = 1.348617e+01;
-this->bike_lqr_params.lqrs[1].e = -3.779491e+01;
-this->bike_lqr_params.lqrs[1].f = 6.286703e+01;
-this->bike_lqr_params.lqrs[1].g = -6.046542e+01;
-this->bike_lqr_params.lqrs[1].h = 3.422550e+01;
+this->bike_lqr_params.lqrs[1].a = -1.560181e-02;
+this->bike_lqr_params.lqrs[1].b = 3.329101e-01;
+this->bike_lqr_params.lqrs[1].c = -2.954741e+00;
+this->bike_lqr_params.lqrs[1].d = 1.413355e+01;
+this->bike_lqr_params.lqrs[1].e = -3.945927e+01;
+this->bike_lqr_params.lqrs[1].f = 6.503630e+01;
+this->bike_lqr_params.lqrs[1].g = -6.089175e+01;
+this->bike_lqr_params.lqrs[1].h = 3.030269e+01;
 /*参数*/
-this->bike_lqr_params.lqrs[2].a = 4.651967e-04;
-this->bike_lqr_params.lqrs[2].b = -9.841306e-03;
-this->bike_lqr_params.lqrs[2].c = 8.633327e-02;
-this->bike_lqr_params.lqrs[2].d = -4.062597e-01;
-this->bike_lqr_params.lqrs[2].e = 1.108663e+00;
-this->bike_lqr_params.lqrs[2].f = -1.804711e+00;
-this->bike_lqr_params.lqrs[2].g = 4.464752e+00;
-this->bike_lqr_params.lqrs[2].h = -2.124620e-01;
+this->bike_lqr_params.lqrs[2].a = 4.369293e-04;
+this->bike_lqr_params.lqrs[2].b = -9.332416e-03;
+this->bike_lqr_params.lqrs[2].c = 8.289935e-02;
+this->bike_lqr_params.lqrs[2].d = -3.967833e-01;
+this->bike_lqr_params.lqrs[2].e = 1.110095e+00;
+this->bike_lqr_params.lqrs[2].f = -1.887723e+00;
+this->bike_lqr_params.lqrs[2].g = 4.366517e+00;
+this->bike_lqr_params.lqrs[2].h = 2.033561e-01;
  
    // bike discription
    this->bike_state.com_dist = 0.32617799;
@@ -329,7 +338,7 @@ this->bike_lqr_params.lqrs[2].h = -2.124620e-01;
    this->_data->low_cmd->kd.setZero();
    this->_data->low_cmd->tau_cmd.setZero();
 
-   std::cout << "\033[17A\r"; // \033[3A 表示上移3行
+   std::cout << "\033[19A\r"; // \033[3A 表示上移3行
    for (int i = 0; i < _data->low_state->q.rows(); i++)
    {
      std::cout << "motor" << i << ":" << "\033[K" << "\n"
@@ -338,6 +347,7 @@ this->bike_lqr_params.lqrs[2].h = -2.124620e-01;
    }
    std::cout << "angVel: \n" << _data->state_estimator->getResult().omegaBody << "\033[K" << std::endl;
    std::cout << "rpy: \n" << _data->state_estimator->getResult().rpy << "\033[K" << std::endl;
+   std::cout << "turn_c: " << turn_c_pid.target << ", " << turn_c_pid.current << std::endl;
  
    // update commands
    this->bike_state.ref_v = 1.5*this->_data->state_command->rc_data_->twist_linear[point::X];
@@ -595,6 +605,7 @@ this->bike_lqr_params.lqrs[2].h = -2.124620e-01;
                                            this->bike_lqr_params.motor_imax[i],
                                            this->bike_lqr_params.motor_lim[i]);
    }
+   this->turn_c_pid.Params_Config(this->bike_lqr_params.turn_c_kp,0,1000.);
  }
  
  void FSMState_TraditionCtrl::_high_level_lqr_cal()
@@ -626,11 +637,15 @@ this->bike_lqr_params.lqrs[2].h = -2.124620e-01;
  
    if (this->bike_pid_params.heading_enList[1] == true)
    {
-     this->bike_state.ref_roll = this->bike_heading_pid[1].out;
+     this->bike_state.ref_roll = upper::constrain(this->bike_heading_pid[1].out,
+                                                  bike_state.ref_roll+bike_lqr_params.roll_tar_slope,
+                                                  bike_state.ref_roll-bike_lqr_params.roll_tar_slope);
    }
    else if (this->bike_pid_params.heading_enList[0] == true)
    {
-     this->bike_state.ref_roll = this->bike_heading_pid[0].out;
+     this->bike_state.ref_roll = upper::constrain(this->bike_heading_pid[0].out,
+                                                  bike_state.ref_roll+bike_lqr_params.roll_tar_slope,
+                                                  bike_state.ref_roll-bike_lqr_params.roll_tar_slope);
    }
  }
  
@@ -639,9 +654,9 @@ this->bike_lqr_params.lqrs[2].h = -2.124620e-01;
    // task1: roll error, rollVel error, turn error -> turnVel ref
    double real_v = this->real_v_mf.f(this->bike_state.dof_vel[2]*this->bike_state.wheel_radius);
    // avoid approach 0
-   if(real_v<1.)
+   if(real_v<0.5)
    {
-     real_v=1.;
+     real_v=0.5;
    }
    else if(real_v>4.)
    {
@@ -658,12 +673,19 @@ this->bike_lqr_params.lqrs[2].h = -2.124620e-01;
    this->bike_lqr_pid[2].Adjust(real_v);
  
    // task2: turnVel error -> turn motor pid
-   this->bike_motor_pid[0].target = -(this->bike_lqr_pid[0].out + this->bike_lqr_pid[1].out + this->bike_lqr_pid[2].out);
+   this->turn_c_pid.target = upper::constrain((this->bike_lqr_pid[0].out + this->bike_lqr_pid[1].out + this->bike_lqr_pid[2].out)/this->turn_c_pid.kp - this->bike_state.dof_pos[0],this->bike_lqr_params.turn_c_lim);
+   this->turn_c_pid.current = -this->bike_state.dof_pos[0];
+   this->turn_c_pid.Adjust(0);
+   this->bike_motor_pid[0].target = -this->turn_c_pid.out;
+  //  this->bike_motor_pid[0].target = -(this->bike_lqr_pid[0].out + this->bike_lqr_pid[1].out + this->bike_lqr_pid[2].out);
    // this->bike_motor_pid[0].target = -this->bike_state.ref_roll;
    this->bike_motor_pid[0].current = this->bike_state.dof_vel[0];
    this->bike_motor_pid[0].Adjust(0, this->bike_state.dof_vel[0]);
  
    // task3: rear motor velocity error -> rear motor pid
+  //  this->bike_motor_pid[2].target = upper::constrain(this->bike_state.ref_v / this->bike_state.wheel_radius,
+  //                                                     this->bike_state.dof_vel[2]+this->bike_lqr_params.vel_tar_slope,
+  //                                                     this->bike_state.dof_vel[2]-this->bike_lqr_params.vel_tar_slope);
    this->bike_motor_pid[2].target = this->bike_state.ref_v / this->bike_state.wheel_radius;
    this->bike_motor_pid[2].current = this->bike_state.dof_vel[2];
    //  this->bike_motor_pid[2].Adjust(0, this->bike_state.dof_vel[2]);

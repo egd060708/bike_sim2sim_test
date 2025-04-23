@@ -214,7 +214,7 @@ Robot {
   controller "<extern>"
 }
 Solid {
-  translation -0.1 0.13 0.15
+  translation -0.12 0.13 0.15
   children [
     DEF b Shape {
       appearance PBRAppearance {
@@ -227,7 +227,7 @@ Solid {
   boundingObject USE b
 }
 Solid {
-  translation -0.1 -0.13 0.15
+  translation -0.12 -0.13 0.15
   children [
     DEF b Shape {
       appearance PBRAppearance {

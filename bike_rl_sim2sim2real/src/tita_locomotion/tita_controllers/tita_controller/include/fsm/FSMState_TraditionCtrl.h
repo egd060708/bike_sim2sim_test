@@ -47,6 +47,8 @@ typedef struct _LqrParams
   double heading_imax[2] = {0};
   double heading_lim[2] = {0};
   bool heading_enList[2] = {false};
+  double roll_tar_slope = 0.025;
+  double vel_tar_slope = 0.2;
 
   double motor_kp[3] = {0};
   double motor_ki[3] = {0};
@@ -56,6 +58,9 @@ typedef struct _LqrParams
   bool motor_enList[3] = {false};
 
   Fit_Params lqrs[3] = {0};// 3 state
+
+  double turn_c_kp=1.;
+  double turn_c_lim=1.3;
 }LqrParams;
 
 // bike states
@@ -121,6 +126,7 @@ private:
 
   // lqr controller
   PIDmethod bike_lqr_pid[3];
+  PIDmethod turn_c_pid;
   LqrParams bike_lqr_params;
   void _lqr_params_update();
   void _high_level_lqr_cal();
