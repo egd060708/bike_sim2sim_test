@@ -14,6 +14,12 @@ typedef enum _CtrlMode
   LQR
 }CtrlMode;
 
+typedef enum _TurnMode
+{
+  TROLL=0,
+  TDIRECTION
+}TurnMode;
+
 // params for pid
 typedef struct _PidParams
 {
@@ -61,6 +67,8 @@ typedef struct _LqrParams
 
   double turn_c_kp=1.;
   double turn_c_lim=1.3;
+
+  TurnMode lqr_turn = TurnMode::TROLL;
 }LqrParams;
 
 // bike states

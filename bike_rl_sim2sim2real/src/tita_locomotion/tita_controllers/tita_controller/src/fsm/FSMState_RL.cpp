@@ -17,7 +17,7 @@ FSMState_RL::FSMState_RL(std::shared_ptr<ControlFSMData> data)
   this->model_name = data->params->model_engine_path;
 
   this->inference_test_ = std::make_shared<RL_InferenceModule>(NUM_OBS, OBS_BUF, NUM_OUTPUT,
-                                                               "/home/lu/Git_Project/gitlab/bike_rl/engine/head_4model_11000_P.engine");
+                                                               "/home/lu/Git_Project/gitlab/bike_rl/engine/head_19model_7000_P.engine");
   // 使用lambda表达式传入函数指针
   this->inference_test_->set_obs_func([this]() -> const std::vector<float>
                                       { return this->_GetObs(); });
@@ -73,15 +73,15 @@ void FSMState_RL::enter()
   this->params_.commands_scale[3] = this->params_.lin_vel_scale;
 
   this->dofs_.P_p[0] = 20;
-  this->dofs_.P_d[0] = 1.;
+  this->dofs_.P_d[0] = 2.;
   // this->dofs_.P_p[0] = 40;
   // this->dofs_.P_d[0] = 5.;
   this->dofs_.P_p[1] = 10;
-  this->dofs_.P_d[1] = 0.2;
+  this->dofs_.P_d[1] = 0.4;
   if (NUM_OUTPUT == 3)
   {
     this->dofs_.P_p[2] = 10;
-    this->dofs_.P_d[2] = 0.2;
+    this->dofs_.P_d[2] = 0.4;
   }
 
   this->dofs_.V_p[0] = 10.;
@@ -102,8 +102,8 @@ void FSMState_RL::enter()
   }
 
   this->params_.torque_limits[0] = 3;
-  this->params_.torque_limits[1] = 20;
-  this->params_.torque_limits[2] = 20;
+  this->params_.torque_limits[1] = 5;
+  this->params_.torque_limits[2] = 5;
 
   // const float default_dof_pos_tmp[NUM_OUTPUT] = {0.};
   this->heading_cmd_ = 0.;
@@ -160,8 +160,8 @@ void FSMState_RL::run()
             << this->torques[2] << std::endl;
   for (int i = 0; i < NUM_OUTPUT; i++)
   {
-    //  this->_data->low_cmd->tau_cmd[i] = upper::constrain(this->torques[i],this->params_.torque_limits[i]);
-    this->_data->low_cmd->tau_cmd[i] = 0;
+     this->_data->low_cmd->tau_cmd[i] = upper::constrain(this->torques[i],this->params_.torque_limits[i]);
+    // this->_data->low_cmd->tau_cmd[i] = 0;
   }
 
   for (int i = 0; i < NUM_OUTPUT; i++)

@@ -12,6 +12,12 @@
  FSMState_TraditionCtrl::FSMState_TraditionCtrl(std::shared_ptr<ControlFSMData> data)
      : FSMState(data, FSMStateName::TRADITION_CTRL, "tradition_ctrl")
  {
+   
+   // control mode
+   this->ctrl_mode = CtrlMode::LQR;
+   // turn mode
+   this->bike_lqr_params.lqr_turn = TurnMode::TDIRECTION;
+
    // use 2dof
    this->bike_pid_params.motor_enList[0] = true;
    this->bike_pid_params.motor_enList[1] = false;
@@ -169,8 +175,8 @@
  
  #else
    // multiCircle offset
-   this->turn_circle.set_offset(0.82);
-  // this->turn_circle.set_offset(0.);
+  //  this->turn_circle.set_offset(0.82);
+  this->turn_circle.set_offset(0.);
 
    // pid params
    this->bike_pid_params.balance_kp = -20.;
@@ -227,12 +233,24 @@
    this->bike_lqr_params.heading_kd[0] = -0.;
    this->bike_lqr_params.heading_imax[0] = 0.;
    this->bike_lqr_params.heading_lim[0] = 1.;
- 
-   this->bike_lqr_params.heading_kp[1] = 0.;
-   this->bike_lqr_params.heading_ki[1] = -0.2;
-   this->bike_lqr_params.heading_kd[1] = 0.0;
-   this->bike_lqr_params.heading_imax[1] = 0.1;
-   this->bike_lqr_params.heading_lim[1] = 0.1;
+   if(this->bike_lqr_params.lqr_turn == TurnMode::TROLL)
+   {
+    this->bike_lqr_params.heading_kp[1] = 0.;
+    this->bike_lqr_params.heading_ki[1] = -0.2;
+    this->bike_lqr_params.heading_kd[1] = 0.0;
+    this->bike_lqr_params.heading_imax[1] = 0.1;
+    this->bike_lqr_params.heading_lim[1] = 0.1;
+    this->bike_lqr_params.roll_tar_slope = 0.025;
+   }
+   else
+   {
+    this->bike_lqr_params.heading_kp[1] = 0.;
+    this->bike_lqr_params.heading_ki[1] = -1.;
+    this->bike_lqr_params.heading_kd[1] = 0.;
+    this->bike_lqr_params.heading_imax[1] = 1.;
+    this->bike_lqr_params.heading_lim[1] = 1.;
+    // this->bike_lqr_params.roll_tar_slope = 0.5;
+   }
  
    this->bike_lqr_params.motor_kp[0] = 5.;
    this->bike_lqr_params.motor_ki[0] = 60.;
@@ -255,7 +273,6 @@
    this->bike_lqr_params.turn_c_kp = 5.;
    this->bike_lqr_params.turn_c_lim = 1.;
 
-   this->bike_lqr_params.roll_tar_slope = 0.025;
    this->bike_lqr_params.vel_tar_slope = 0.2;
  
   /*参数*/
@@ -294,9 +311,6 @@ this->bike_lqr_params.lqrs[2].h = 2.033561e-01;
    this->bike_state.wheel_radius = 0.175;
  #endif
  
-   // control mode
-   this->ctrl_mode = LQR;
- 
  }
  
  void FSMState_TraditionCtrl::enter()
@@ -319,6 +333,9 @@ this->bike_lqr_params.lqrs[2].h = 2.033561e-01;
    }
    
    // update body state
+   this->bike_state.ref_roll = 0.;
+   this->bike_state.ref_rollVel = 0.;
+   this->bike_state.ref_turn = 0.;
    this->_bike_state_update();
  
    this->threadRunning = true;
@@ -347,15 +364,25 @@ this->bike_lqr_params.lqrs[2].h = 2.033561e-01;
    }
    std::cout << "angVel: \n" << _data->state_estimator->getResult().omegaBody << "\033[K" << std::endl;
    std::cout << "rpy: \n" << _data->state_estimator->getResult().rpy << "\033[K" << std::endl;
-   std::cout << "turn_c: " << turn_c_pid.target << ", " << turn_c_pid.current << std::endl;
+   std::cout << "turn_c: " << this->bike_lqr_pid[2].target << ", " << this->bike_lqr_pid[2].current << ", " << this->bike_lqr_pid[2].out << std::endl;
  
    // update commands
    this->bike_state.ref_v = 2.*this->_data->state_command->rc_data_->twist_linear[point::X];
    this->bike_state.ref_yaw = this->_data->state_command->rc_data_->twist_angular[point::Z];
    this->bike_state.ref_yawVel = this->_data->state_command->rc_data_->twist_angular[point::Z];
-   this->bike_state.ref_roll = -0.05 * this->_data->state_command->rc_data_->twist_angular[point::Z];
-   this->bike_state.ref_rollVel = 0.;
-   this->bike_state.ref_turn = 0.;
+   if(this->bike_lqr_params.lqr_turn == TurnMode::TROLL)
+   {
+    this->bike_state.ref_roll = -0.05 * this->_data->state_command->rc_data_->twist_angular[point::Z];
+    this->bike_state.ref_rollVel = 0.;
+    this->bike_state.ref_turn = 0.;
+   }
+   else
+   {
+    // 由于系统平衡需要，前叉实际稳定方向与目标值相反，要自行车正转就要设置负的目标值
+    this->bike_state.ref_roll = 0.;
+    this->bike_state.ref_rollVel = 0.;
+    this->bike_state.ref_turn = -0.5 * this->_data->state_command->rc_data_->twist_angular[point::Z];
+   }
  
    for (int i = 0; i < 3; i++)
    {
@@ -634,16 +661,24 @@ this->bike_lqr_params.lqrs[2].h = 2.033561e-01;
    this->bike_heading_pid[1].current = this->bike_state.obs_yawVel;
    this->bike_heading_pid[1].Adjust(0);
   
- 
+   double* use_turn_ptr = nullptr;
+   if(this->bike_lqr_params.lqr_turn == TurnMode::TROLL)
+   {
+    use_turn_ptr = &this->bike_state.ref_roll;
+   }
+   else
+   {
+    use_turn_ptr = &this->bike_state.ref_turn;
+   }
    if (this->bike_pid_params.heading_enList[1] == true)
    {
-     this->bike_state.ref_roll = upper::constrain(this->bike_heading_pid[1].out,
+     *use_turn_ptr = upper::constrain(this->bike_heading_pid[1].out,
                                                   bike_state.ref_roll+bike_lqr_params.roll_tar_slope,
                                                   bike_state.ref_roll-bike_lqr_params.roll_tar_slope);
    }
    else if (this->bike_pid_params.heading_enList[0] == true)
    {
-     this->bike_state.ref_roll = upper::constrain(this->bike_heading_pid[0].out,
+    *use_turn_ptr = upper::constrain(this->bike_heading_pid[0].out,
                                                   bike_state.ref_roll+bike_lqr_params.roll_tar_slope,
                                                   bike_state.ref_roll-bike_lqr_params.roll_tar_slope);
    }
@@ -662,12 +697,18 @@ this->bike_lqr_params.lqrs[2].h = 2.033561e-01;
    {
      real_v=4.;
    }
+   // 如果是使用车头转向，那么考虑加入角速度计算前馈
+  //  if(this->bike_lqr_params.lqr_turn == TurnMode::TDIRECTION && this->bike_pid_params.heading_enList[1] == true)
+  //  {
+  //   this->bike_state.ref_turn -= this->bike_state.ref_yawVel * this->bike_state.wheel_dist / real_v;
+  //  }
    this->bike_lqr_pid[0].target = this->bike_state.ref_roll;
    this->bike_lqr_pid[0].current = this->bike_state.obs_roll;
    this->bike_lqr_pid[0].Adjust(real_v);
    this->bike_lqr_pid[1].target = this->bike_state.ref_rollVel;
    this->bike_lqr_pid[1].current = this->bike_state.obs_rollVel;
    this->bike_lqr_pid[1].Adjust(real_v);
+  //  this->bike_lqr_pid[2].target = upper::constrain(this->bike_state.ref_turn,this->bike_lqr_params.turn_c_lim);
    this->bike_lqr_pid[2].target = this->bike_state.ref_turn;
    this->bike_lqr_pid[2].current = this->bike_state.obs_turn;
    this->bike_lqr_pid[2].Adjust(real_v);
