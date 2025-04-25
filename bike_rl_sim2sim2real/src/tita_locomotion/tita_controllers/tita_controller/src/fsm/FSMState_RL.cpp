@@ -17,7 +17,7 @@ FSMState_RL::FSMState_RL(std::shared_ptr<ControlFSMData> data)
   this->model_name = data->params->model_engine_path;
 
   this->inference_test_ = std::make_shared<RL_InferenceModule>(NUM_OBS, OBS_BUF, NUM_OUTPUT,
-                                                               "/home/lu/Git_Project/gitlab/bike_rl/engine/head_19model_7000_P.engine");
+                                                               "/home/robot/Git_Project/github/bike_sim2sim_test/rl_engine/head_17model_11000_P.engine");
   // 使用lambda表达式传入函数指针
   this->inference_test_->set_obs_func([this]() -> const std::vector<float>
                                       { return this->_GetObs(); });
@@ -45,11 +45,14 @@ FSMState_RL::FSMState_RL(std::shared_ptr<ControlFSMData> data)
   { this->_T_actuate(); };
   // 配置关节执行模式
   this->dofs_.dof_mode = DofCtrlType::P;
+  // 配置offset
+  this->turn_circle[0].set_offset(TURN_OFFSET);
+  this->turn_circle[1].set_offset(TURN_OFFSET);
 }
 
 void FSMState_RL::enter()
 {
-  // std::cout << "rl state enter" << std::endl;
+  std::cout << "rl state enter" << std::endl;
 
   this->_data->state_command->firstRun = true;
   this->use_lpf_actions = true;
@@ -57,7 +60,14 @@ void FSMState_RL::enter()
   for (int i = 0; i < NUM_OUTPUT; i++)
   {
     this->desired_pos[i] = this->_data->low_state->q[i];
-    this->obs_.dof_pos[i] = this->_data->low_state->q[i];
+    if(i==0)
+    {
+      this->obs_.dof_pos[i] = turn_circle[0].f(this->_data->low_state->q[i]);
+    }
+    else
+    {
+      this->obs_.dof_pos[i] = this->_data->low_state->q[i];
+    }
     this->obs_.dof_vel[i] = this->_data->low_state->dq[i];
   }
 
@@ -107,6 +117,7 @@ void FSMState_RL::enter()
 
   // const float default_dof_pos_tmp[NUM_OUTPUT] = {0.};
   this->heading_cmd_ = 0.;
+  this->real_heading = this->_data->state_estimator->getResult().rpy(2, 0);
 
   this->obs_.forward_vec[0] = 1.0;
   this->obs_.forward_vec[1] = 0.0;
@@ -155,13 +166,13 @@ void FSMState_RL::run()
   this->_data->low_cmd->kp.setZero();
   this->_data->low_cmd->kd.setZero();
   this->_data->low_cmd->tau_cmd.setZero();
-  std::cout << "torques: \n" << this->torques[0] << "\n"
-            << this->torques[1] << "\n"
-            << this->torques[2] << std::endl;
+  // std::cout << "torques: \n" << this->torques[0] << "\n"
+  //           << this->torques[1] << "\n"
+  //           << this->torques[2] << std::endl;
   for (int i = 0; i < NUM_OUTPUT; i++)
   {
-     this->_data->low_cmd->tau_cmd[i] = upper::constrain(this->torques[i],this->params_.torque_limits[i]);
-    // this->_data->low_cmd->tau_cmd[i] = 0;
+    //  this->_data->low_cmd->tau_cmd[i] = upper::constrain(this->torques[i],this->params_.torque_limits[i]);
+    this->_data->low_cmd->tau_cmd[i] = 0;
   }
 
   for (int i = 0; i < NUM_OUTPUT; i++)
@@ -169,6 +180,18 @@ void FSMState_RL::run()
     this->obs_.dof_pos_last[i] = this->obs_.dof_pos[i];
     this->obs_.dof_vel_last[i] = this->obs_.dof_vel[i];
   }
+  std::cout << debug_flag << std::endl;
+
+  std::cout << "\033[21A\r"; // \033[3A 表示上移3行
+  for (int i = 0; i < _data->low_state->q.rows(); i++)
+  {
+    std::cout << "motor" << i << ":" << "\033[K" << "\n"
+              << "q:  " << _data->low_state->q[i] << "\033[K" << "\n"
+              << "dq: " << _data->low_state->dq[i] << "\033[K" << std::endl;
+  }
+  std::cout << "angVel: \n" << _data->state_estimator->getResult().omegaBody << "\033[K" << std::endl;
+  std::cout << "rpy: \n" << _data->state_estimator->getResult().rpy << "\033[K" << std::endl;
+  std::cout << "torque: \n" << this->torques[0] << "\n" << this->torques[1] << "\n" << this->torques[2] << std::endl;
 }
 
 void FSMState_RL::exit()
@@ -213,7 +236,7 @@ const std::vector<float> FSMState_RL::_GetObs()
   Mat3<double> _B2G_RotMat = this->_data->state_estimator->getResult().rBody;
   Mat3<double> _G2B_RotMat = this->_data->state_estimator->getResult().rBody.transpose();
 
-  Vec3<double> linvel = this->_data->state_estimator->getResult().vBody;
+  // Vec3<double> linvel = this->_data->state_estimator->getResult().vBody;
   // Vec3<double> angvel = a_l;
   // a_l = 0.97 * this->_data->state_estimator->getResult().omegaBody + 0.03 * a_l;
   Vec3<double> angvel = this->_data->state_estimator->getResult().omegaBody;
@@ -244,7 +267,16 @@ const std::vector<float> FSMState_RL::_GetObs()
   }
 
   // cmd
-  double angle_err = (double)this->heading_cmd_ - this->_data->state_estimator->getResult().rpy(2, 0);
+  this->real_heading += 0.01 * this->heading_cmd_;
+  if(this->real_heading > 3.1415926)
+  {
+    this->real_heading = -3.1415926;
+  }
+  else if(this->real_heading < -3.1415926)
+  {
+    this->real_heading = 3.1415926;
+  }
+  double angle_err = (double)this->real_heading - this->_data->state_estimator->getResult().rpy(2, 0);
   angle_err = fmod(angle_err, 2.0 * M_PI);
   while (angle_err > M_PI)
   {
@@ -266,7 +298,7 @@ const std::vector<float> FSMState_RL::_GetObs()
   obs_buff.push_back(angle_err * this->params_.commands_scale[2]);
   if (NUM_OBS == 22)
   {
-    obs_buff.push_back((double)this->heading_cmd_);
+    obs_buff.push_back((double)this->real_heading * this->params_.commands_scale[3]);
     // obs_buff.push_back(0);
   }
 
@@ -300,20 +332,30 @@ void FSMState_RL::_Run_Forward()
 {
   while (this->threadRunning[0])
   {
+    // debug_flag = 1;
     long long _start_time = getSystemTime();
-
+    // debug_flag = 2;
     if (!this->stop_update_[0])
     {
+      // debug_flag = 3;
       // update current dof positions and velocities
       for (int i = 0; i < NUM_OUTPUT; i++)
       {
-        this->obs_.dof_pos[i] = this->_data->low_state->q[i];
+        if(i==0)
+        {
+          this->obs_.dof_pos[i] = turn_circle[0].f(this->_data->low_state->q[i]);
+        }
+        else
+        {
+          this->obs_.dof_pos[i] = this->_data->low_state->q[i];
+        }
         this->obs_.dof_vel[i] = this->_data->low_state->dq[i];
       }
-
+      
       this->inference_test_->forward();
+      // debug_flag = 4;
       std::shared_ptr<float[]> get_output(this->inference_test_->get_action());
-
+      // debug_flag = 5;
       // calculate actions
       for (int j = 0; j < NUM_OUTPUT; j++)
       {
@@ -361,7 +403,7 @@ void FSMState_RL::_P_actuate()
   {
     if (i == 0)
     {
-      this->torques[i] = this->dofs_.P_p[i] * (this->desired_pos[i] - this->_data->low_state->q[i]) + this->dofs_.P_d[i] * (0 - this->_data->low_state->dq[i]);
+      this->torques[i] = this->dofs_.P_p[i] * (this->desired_pos[i] - turn_circle[1].f(this->_data->low_state->q[i])) + this->dofs_.P_d[i] * (0 - this->_data->low_state->dq[i]);
     }
     else
     {

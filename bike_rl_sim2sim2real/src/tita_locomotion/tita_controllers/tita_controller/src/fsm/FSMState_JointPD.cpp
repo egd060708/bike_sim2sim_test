@@ -46,7 +46,7 @@ FSMState_JointPD::FSMState_JointPD(std::shared_ptr<ControlFSMData> data)
   this->motor_pid_test[2].Params_Config(0.5,0.01,0.05,4.,4.);
 
   // 转向偏置
-  this->turn_circle.set_offset(0.82);
+  this->turn_circle.set_offset(TURN_OFFSET);
 }
 
 void FSMState_JointPD::enter()
@@ -83,18 +83,18 @@ void FSMState_JointPD::run()
   this->_data->low_cmd->tau_cmd[1] = 0.;
   this->_data->low_cmd->tau_cmd[2] = this->test_out[2];
 
-  // std::cout << "\033[20A\r"; // \033[3A 表示上移3行
-  // std::cout << "tPr: " << this->motor_pid_test[0].target << "\033[K" << std::endl;
-  // for (int i = 0; i < _data->low_state->q.rows(); i++)
-  // {
-  //   std::cout << "motor" << i << ":" << "\033[K" << "\n"
-  //             << "q:  " << _data->low_state->q[i] << "\033[K" << "\n"
-  //             << "dq: " << _data->low_state->dq[i] << "\033[K" << std::endl;
-  // }
-  // std::cout << "angVel: \n" << _data->state_estimator->getResult().omegaBody << "\033[K" << std::endl;
-  // std::cout << "rpy: \n" << _data->state_estimator->getResult().rpy << "\033[K" << std::endl;
-  // std::cout << "turnOut: " << this->test_out[0] << "\033[K" << std::endl;
-  // std::cout << "wheelOut: " << this->test_out[2] << "\033[K" << std::endl; 
+  std::cout << "\033[20A\r"; // \033[3A 表示上移3行
+  std::cout << "tPr: " << this->motor_pid_test[0].target << "\033[K" << std::endl;
+  for (int i = 0; i < _data->low_state->q.rows(); i++)
+  {
+    std::cout << "motor" << i << ":" << "\033[K" << "\n"
+              << "q:  " << _data->low_state->q[i] << "\033[K" << "\n"
+              << "dq: " << _data->low_state->dq[i] << "\033[K" << std::endl;
+  }
+  std::cout << "angVel: \n" << _data->state_estimator->getResult().omegaBody << "\033[K" << std::endl;
+  std::cout << "rpy: \n" << _data->state_estimator->getResult().rpy << "\033[K" << std::endl;
+  std::cout << "turnOut: " << this->test_out[0] << "\033[K" << std::endl;
+  std::cout << "wheelOut: " << this->test_out[2] << "\033[K" << std::endl; 
 }
 
 void FSMState_JointPD::_controller_loop()

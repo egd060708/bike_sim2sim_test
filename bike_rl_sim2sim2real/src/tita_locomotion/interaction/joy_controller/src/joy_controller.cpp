@@ -150,19 +150,19 @@ namespace joy_controller
         else
         {
           // std::cout << joy_msg_->axes[7] << std::endl;
-          if (joy_msg_->axes[5] == 1)
-          {
-            // msg.data = "rl";
-            msg.data = "joint_pd";
-          }
-          else if (joy_msg_->axes[5] == -1)
+          if(joy_msg_->axes[5] == -1)
           {
             msg.data = "traditional_ctrl";
           }
-          else if (joy_msg_->axes[5] == 0)
+          else if(joy_msg_->axes[7] == -1)
+          {
+            msg.data = "rl";
+          }
+          else
           {
             msg.data = "joint_pd";
           }
+          
         }
         // if (joy_msg_->axes[4] == -1 && feedback_fsm_ == "idle") {
         //   msg.data = "transform_up";

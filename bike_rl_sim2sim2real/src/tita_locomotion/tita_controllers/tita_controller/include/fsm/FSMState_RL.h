@@ -7,6 +7,8 @@
 #include "tensorrt_cuda/tensor_cuda_test.hpp"
 #include "../my_controller_module/Pid/Cpp/include/PIDmethod.h"
 #include "tensorrt_cuda/rl_inference_module.hpp"
+#include "../my_filter_module/Cpp/include/my_filters.h"
+
 
 #define NUM_OBS 22
 #define OBS_BUF 10
@@ -32,7 +34,7 @@ struct ModelParams
     // float d_gains[NUM_OUTPUT];
     // float p_gains[NUM_OUTPUT];
     float commands_scale[4];
-    float default_dof_pos[NUM_OUTPUT];
+    float default_dof_pos[NUM_OUTPUT] = {0};
 };
 // 观测数据维度
 struct Observations
@@ -94,6 +96,7 @@ private:
   float wheel_init_pos_abs_[4];
   float x_vel_cmd_;
   float heading_cmd_;
+  float real_heading;
   std::string model_name;
 
   PIDmethod heading_pid;
@@ -126,6 +129,10 @@ private:
   bool thread_first_[2] = {true,true};
   
   bool use_lpf_actions = false;
+
+  multiCircle turn_circle[2] = {multiCircle(3.1415926), multiCircle(3.1415926)};
+
+  int debug_flag = 0;
 };
 
 #endif  // FSMSTATE_RL_H

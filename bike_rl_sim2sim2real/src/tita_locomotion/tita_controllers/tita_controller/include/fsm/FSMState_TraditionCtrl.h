@@ -53,7 +53,7 @@ typedef struct _LqrParams
   double heading_imax[2] = {0};
   double heading_lim[2] = {0};
   bool heading_enList[2] = {false};
-  double roll_tar_slope = 0.025;
+  double turn_tar_slope = 0.05;
   double vel_tar_slope = 0.2;
 
   double motor_kp[3] = {0};
@@ -86,6 +86,8 @@ typedef struct _BikeCtrlState
   double obs_yawVel;
   double ref_turn;
   double obs_turn;
+
+  double roll_offset = 0;
 
   double wheel_dist;
   double com_dist;

@@ -25,7 +25,7 @@
  
    // use direct roll ctrl
    this->bike_pid_params.heading_enList[0] = false;
-   this->bike_pid_params.heading_enList[1] = true;
+   this->bike_pid_params.heading_enList[1] = false;
  
    // pid controller pid init
    this->bike_balance_pid.PID_Init(Common, 0);
@@ -175,8 +175,9 @@
  
  #else
    // multiCircle offset
-  //  this->turn_circle.set_offset(0.82);
-  this->turn_circle.set_offset(0.);
+   this->turn_circle.set_offset(TURN_OFFSET);
+  // this->turn_circle.set_offset(0.);
+  this->bike_state.roll_offset = -0.02;
 
    // pid params
    this->bike_pid_params.balance_kp = -20.;
@@ -240,16 +241,16 @@
     this->bike_lqr_params.heading_kd[1] = 0.0;
     this->bike_lqr_params.heading_imax[1] = 0.1;
     this->bike_lqr_params.heading_lim[1] = 0.1;
-    this->bike_lqr_params.roll_tar_slope = 0.025;
+    this->bike_lqr_params.turn_tar_slope = 0.025;
    }
    else
    {
     this->bike_lqr_params.heading_kp[1] = 0.;
     this->bike_lqr_params.heading_ki[1] = -1.;
     this->bike_lqr_params.heading_kd[1] = 0.;
-    this->bike_lqr_params.heading_imax[1] = 1.;
-    this->bike_lqr_params.heading_lim[1] = 1.;
-    // this->bike_lqr_params.roll_tar_slope = 0.5;
+    this->bike_lqr_params.heading_imax[1] = 0.5;
+    this->bike_lqr_params.heading_lim[1] = 0.5;
+    this->bike_lqr_params.turn_tar_slope = 0.5;
    }
  
    this->bike_lqr_params.motor_kp[0] = 5.;
@@ -673,14 +674,14 @@ this->bike_lqr_params.lqrs[2].h = 2.033561e-01;
    if (this->bike_pid_params.heading_enList[1] == true)
    {
      *use_turn_ptr = upper::constrain(this->bike_heading_pid[1].out,
-                                                  bike_state.ref_roll+bike_lqr_params.roll_tar_slope,
-                                                  bike_state.ref_roll-bike_lqr_params.roll_tar_slope);
+                                                  bike_state.ref_roll+bike_lqr_params.turn_tar_slope,
+                                                  bike_state.ref_roll-bike_lqr_params.turn_tar_slope);
    }
    else if (this->bike_pid_params.heading_enList[0] == true)
    {
     *use_turn_ptr = upper::constrain(this->bike_heading_pid[0].out,
-                                                  bike_state.ref_roll+bike_lqr_params.roll_tar_slope,
-                                                  bike_state.ref_roll-bike_lqr_params.roll_tar_slope);
+                                                  bike_state.ref_roll+bike_lqr_params.turn_tar_slope,
+                                                  bike_state.ref_roll-bike_lqr_params.turn_tar_slope);
    }
  }
  
@@ -698,11 +699,11 @@ this->bike_lqr_params.lqrs[2].h = 2.033561e-01;
      real_v=4.;
    }
    // 如果是使用车头转向，那么考虑加入角速度计算前馈
-  //  if(this->bike_lqr_params.lqr_turn == TurnMode::TDIRECTION && this->bike_pid_params.heading_enList[1] == true)
-  //  {
-  //   this->bike_state.ref_turn -= this->bike_state.ref_yawVel * this->bike_state.wheel_dist / real_v;
-  //  }
-   this->bike_lqr_pid[0].target = this->bike_state.ref_roll;
+   if(this->bike_lqr_params.lqr_turn == TurnMode::TDIRECTION && this->bike_pid_params.heading_enList[1] == true)
+   {
+    this->bike_state.ref_turn -= this->bike_state.ref_yawVel * this->bike_state.wheel_dist / real_v;
+   }
+   this->bike_lqr_pid[0].target = this->bike_state.ref_roll + this->bike_state.roll_offset;
    this->bike_lqr_pid[0].current = this->bike_state.obs_roll;
    this->bike_lqr_pid[0].Adjust(real_v);
    this->bike_lqr_pid[1].target = this->bike_state.ref_rollVel;

@@ -10,6 +10,8 @@
 #include "FSMState_TraditionCtrl.h"
 #include "common/enumClass.h"
 
+#define TURN_OFFSET 1.14
+
 struct FSMStateList
 {
   FSMState * invalid;
