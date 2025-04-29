@@ -250,7 +250,7 @@
     this->bike_lqr_params.heading_kd[1] = 0.;
     this->bike_lqr_params.heading_imax[1] = 0.5;
     this->bike_lqr_params.heading_lim[1] = 0.5;
-    this->bike_lqr_params.turn_tar_slope = 0.5;
+    this->bike_lqr_params.turn_tar_slope = 5.;
    }
  
    this->bike_lqr_params.motor_kp[0] = 5.;
@@ -365,7 +365,7 @@ this->bike_lqr_params.lqrs[2].h = 2.033561e-01;
    }
    std::cout << "angVel: \n" << _data->state_estimator->getResult().omegaBody << "\033[K" << std::endl;
    std::cout << "rpy: \n" << _data->state_estimator->getResult().rpy << "\033[K" << std::endl;
-   std::cout << "turn_c: " << this->bike_lqr_pid[2].target << ", " << this->bike_lqr_pid[2].current << ", " << this->bike_lqr_pid[2].out << std::endl;
+   std::cout << "turn_c: " << this->bike_heading_pid[1].target << ", " << this->bike_heading_pid[1].current << ", " << this->bike_heading_pid[1].out << std::endl;
  
    // update commands
    this->bike_state.ref_v = 2.*this->_data->state_command->rc_data_->twist_linear[point::X];
@@ -663,25 +663,28 @@ this->bike_lqr_params.lqrs[2].h = 2.033561e-01;
    this->bike_heading_pid[1].Adjust(0);
   
    double* use_turn_ptr = nullptr;
+   double* obs_turn_ptr = nullptr;
    if(this->bike_lqr_params.lqr_turn == TurnMode::TROLL)
    {
     use_turn_ptr = &this->bike_state.ref_roll;
+    obs_turn_ptr = &this->bike_state.ref_roll;
    }
    else
    {
     use_turn_ptr = &this->bike_state.ref_turn;
+    obs_turn_ptr = &this->bike_state.ref_turn;
    }
    if (this->bike_pid_params.heading_enList[1] == true)
    {
      *use_turn_ptr = upper::constrain(this->bike_heading_pid[1].out,
-                                                  bike_state.ref_roll+bike_lqr_params.turn_tar_slope,
-                                                  bike_state.ref_roll-bike_lqr_params.turn_tar_slope);
+                                                  *use_turn_ptr+bike_lqr_params.turn_tar_slope,
+                                                  *use_turn_ptr-bike_lqr_params.turn_tar_slope);
    }
    else if (this->bike_pid_params.heading_enList[0] == true)
    {
     *use_turn_ptr = upper::constrain(this->bike_heading_pid[0].out,
-                                                  bike_state.ref_roll+bike_lqr_params.turn_tar_slope,
-                                                  bike_state.ref_roll-bike_lqr_params.turn_tar_slope);
+                                                  *use_turn_ptr+bike_lqr_params.turn_tar_slope,
+                                                  *use_turn_ptr-bike_lqr_params.turn_tar_slope);
    }
  }
  

@@ -1,0 +1,79 @@
+%lqr线性化函数(返回参数：lqr参数，对应车辆速度，参数组数）
+function [K_,V_,C_]=bike2dof_lqr_model2(Ts,top,bottom,step,lqr_Q,lqr_R,robot_type)
+count=0;
+for n=bottom:step:top
+    count=count+1;
+end
+
+%建立单元数组，开辟空间
+K_=cell(1,count);
+V_=zeros(1,count);
+C_=count;
+
+xNum = size(lqr_Q,1);%获取行数，也就是状态变量个数
+uNum = size(lqr_R,2);%获取列数，也就是输入变量个数
+
+if robot_type == 0
+    g = 9.8;
+    h = 0.4631022;
+    w = 1.02065;
+    b = 0.4651025;
+else
+    g = 9.8;
+    h = 0.11459196+0.175;
+    w = 0.64;
+    b = 0.32617799;
+end
+% 重力加速度
+% 自行车质心的高度
+% 自行车的行驶速度
+% 前后轮与地面接触点之间的距离
+% 后轮的着地点与重心在地面上的投影间的距离
+
+
+
+m=1;
+for v1_=bottom:step:top
+    A_21 = g/h;
+    A_23 = v1_^2/(w*h);
+    B_21 = (b*v1_)/(w*h);
+    B_41 = v1_/w;
+    lqr_A = [0 1 0 0; A_21 0 A_23 0; 0 0 0 0; 0 0 0 0];
+    lqr_B = [0; B_21; 1; B_41];
+    lqr_C = [1 0 0 0; 0 0 1 0];
+    lqr_D = 0;
+    sys_c = ss(lqr_A,lqr_B,lqr_C,lqr_D);
+    sys_d = c2d(sys_c, Ts);
+    %判断可控性
+    if (rank(ctrb(sys_d.A,sys_d.B))==xNum)    
+        temp=dlqr(sys_d.A,sys_d.B,lqr_Q,lqr_R);
+        if v1_ == 1.
+            disp(sys_c.A)
+            disp(sys_c.B)
+            disp(sys_d.A)
+            disp(sys_d.B)
+            disp(lqr_Q)
+            disp(lqr_R)
+            disp(temp)
+        end
+        cell_temp = cell(1,1);
+        for i = 1:uNum
+            for j = 1:xNum
+                cell_temp{1}(i, j) = temp(i, j);
+            end
+        end
+        K_(1,m)=cell_temp;
+        V_(1,m)=v1_;
+    else
+%         K_(1,m)=0;
+        disp(rank(ctrb(sys_d.A,sys_d.B)));
+        disp(sys_d.A);
+        disp(sys_d.B);
+        V_(1,m)=v1_;
+        disp('Uncontrollable!');
+    end
+    m = m+1;
+end
+
+
+end

@@ -17,7 +17,7 @@ FSMState_RL::FSMState_RL(std::shared_ptr<ControlFSMData> data)
   this->model_name = data->params->model_engine_path;
 
   this->inference_test_ = std::make_shared<RL_InferenceModule>(NUM_OBS, OBS_BUF, NUM_OUTPUT,
-                                                               "/home/robot/Git_Project/github/bike_sim2sim_test/rl_engine/head_17model_11000_P.engine");
+                                                               "/home/lu/Git_Project/gitlab/bike_rl/engine/head/head_20model_6100_P.engine");
   // 使用lambda表达式传入函数指针
   this->inference_test_->set_obs_func([this]() -> const std::vector<float>
                                       { return this->_GetObs(); });
@@ -32,7 +32,7 @@ FSMState_RL::FSMState_RL(std::shared_ptr<ControlFSMData> data)
   // init pid tick and params mode
   this->heading_pid.getMicroTick_regist(getSystemTime);
   this->heading_pid.PID_Init(Common, 0);
-  this->heading_pid.Params_Config(0.4, 0., 0., 0.5, 0.8, -0.8);
+  this->heading_pid.Params_Config(0.5, 0., 0., 0.5, 1., -1.);
   // this->heading_pid.integral = 0.3/0.01;
   this->heading_pid.d_of_current = false;
 
@@ -71,7 +71,7 @@ void FSMState_RL::enter()
     this->obs_.dof_vel[i] = this->_data->low_state->dq[i];
   }
 
-  this->params_.action_scale = 0.25;
+  this->params_.action_scale = 0.1;
   this->params_.num_of_dofs = 3;
   this->params_.lin_vel_scale = 2.0;
   this->params_.ang_vel_scale = 0.25;
@@ -171,8 +171,8 @@ void FSMState_RL::run()
   //           << this->torques[2] << std::endl;
   for (int i = 0; i < NUM_OUTPUT; i++)
   {
-    //  this->_data->low_cmd->tau_cmd[i] = upper::constrain(this->torques[i],this->params_.torque_limits[i]);
-    this->_data->low_cmd->tau_cmd[i] = 0;
+     this->_data->low_cmd->tau_cmd[i] = upper::constrain(this->torques[i],this->params_.torque_limits[i]);
+    // this->_data->low_cmd->tau_cmd[i] = 0;
   }
 
   for (int i = 0; i < NUM_OUTPUT; i++)
@@ -267,7 +267,7 @@ const std::vector<float> FSMState_RL::_GetObs()
   }
 
   // cmd
-  this->real_heading += 0.01 * this->heading_cmd_;
+  this->real_heading += 0.005 * this->heading_cmd_;
   if(this->real_heading > 3.1415926)
   {
     this->real_heading = -3.1415926;
@@ -291,7 +291,10 @@ const std::vector<float> FSMState_RL::_GetObs()
   this->heading_pid.current = 0;
   angle_err = this->heading_pid.Adjust(0);
 
-  // angle_err = (double)this->heading_cmd_;
+  if(NUM_OBS!=22)
+  {
+    angle_err = (double)this->heading_cmd_;
+  }
 
   obs_buff.push_back(this->x_vel_cmd_ * this->params_.commands_scale[0]);
   obs_buff.push_back(0.0);

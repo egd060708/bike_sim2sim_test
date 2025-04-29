@@ -9,6 +9,7 @@
 #include "fsm/ControlFSMData.h"
 
 #define USE_REAL_BIKE 1
+#define TURN_OFFSET 0.
 
 class FSMState
 {
